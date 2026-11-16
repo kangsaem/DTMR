@@ -290,5 +290,10 @@
   "code": "CCJ",
   "name": "카메코",
   "watch": true
+ },
+ {
+  "code": "VNOM",
+  "name": "Viper Energy Inc",
+  "watch": true
  }
 ]
