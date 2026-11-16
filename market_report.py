@@ -1159,7 +1159,7 @@ def market_signals(snap, results):
     weak = sum(1 for r in results if r["rsi"] <= 35) / n if n else None
 
     risk = [
-        ("코스피 RSI 70 이상", f"{ks['rsi']:.0f}" if ks else "-", ks["rsi"] >= 70 if ks else None),      # RSI 맨 위(2026-11-16)
+        ("코스피 RSI 70 이상", f"{ks['rsi']:.1f}" if ks else "-", ks["rsi"] >= 70 if ks else None),      # RSI 맨 위(2026-11-16)
         ("코스피 50일 이격도 120 이상", f"{ks['disp']:.1f}" if ks else "-", ks["disp"] >= 120 if ks else None),
         # 2026-11-16: 'VIX 25↑ 또는 10일 30%↑ 급등' → '200일 이격 150↑'. 검증(risk_study.py, 2000~2026 코스피)에서 VIX 25↑ 뒤 60일 평균 +7%(전체 +2.6%)로
         # 위험이 아니라 바닥 쪽으로 작동. 200일 이격 150↑는 60일 안 -10% 하락 확률 63%(전체 28%), 사례 1998~99·2026(표본 작음)
@@ -1176,7 +1176,7 @@ def market_signals(snap, results):
     bottom = [
         ("코스피 50일 이격도 90 이하", f"{ks['disp']:.1f}" if ks else "-",
          (ks["disp"] <= 90) if ks else None),
-        ("코스피 RSI 35 이하", f"{ks['rsi']:.0f}" if ks else "-", ks["rsi"] <= 35 if ks else None),
+        ("코스피 RSI 35 이하", f"{ks['rsi']:.1f}" if ks else "-", ks["rsi"] <= 35 if ks else None),
         ("코스피 52주 고점 대비 -20% 이하이면서\n최근 20거래일 신저점 없음",
          f"{ks['from_high']:.1f}%" if ks else "-",
          (ks["from_high"] <= -20 and ks["days_since_low"] >= 20) if ks else None),
