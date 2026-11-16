@@ -295,5 +295,10 @@
   "code": "VNOM",
   "name": "Viper Energy Inc",
   "watch": true
+ },
+ {
+  "code": "XLP",
+  "name": "State Street Consumer Staples Sel Sect SPDR ETF",
+  "watch": true
  }
 ]
