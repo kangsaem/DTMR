@@ -280,5 +280,15 @@
   "code": "KYTX",
   "name": "카이버나 테라퓨틱스",
   "watch": true
+ },
+ {
+  "code": "LEU",
+  "name": "센트러스 에너지",
+  "watch": true
+ },
+ {
+  "code": "CCJ",
+  "name": "카메코",
+  "watch": true
  }
 ]
