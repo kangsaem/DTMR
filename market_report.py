@@ -1109,12 +1109,14 @@ def market_snapshot():
     try:
         ks = fdr.DataReader("KS11", START)["Close"].dropna()
         disp = (ks / ks.rolling(50).mean() * 100).dropna()
+        d200 = (ks / ks.rolling(200).mean() * 100).dropna()     # 200일선 이격도(위험 '장기 과열', 2026-11-16)
         hi250 = ks.rolling(250, min_periods=1).max().iloc[-1]
         win = ks.tail(250)
         days_since_low = len(win.loc[win.idxmin():]) - 1   # 52주 최저 종가가 몇 거래일 전인지
         snap["ks"] = {"close": float(ks.iloc[-1]), "chg": float((ks.iloc[-1] / ks.iloc[-2] - 1) * 100),
                       "date": ks.index[-1], "disp": float(disp.iloc[-1]), "disp_max": float(disp.max()),
                       "disp_min": float(disp.min()), "rsi": float(rsi(ks).iloc[-1]),
+                      "disp200": float(d200.iloc[-1]) if len(d200) else None,
                       "from_high": float((ks.iloc[-1] / hi250 - 1) * 100), "cross": cross_state(ks),
                       "days_since_low": int(days_since_low), "chart": chart_data(ks)}
     except Exception as e:
@@ -1159,8 +1161,10 @@ def market_signals(snap, results):
     risk = [
         ("코스피 50일 이격도 120 이상", f"{ks['disp']:.1f}" if ks else "-", ks["disp"] >= 120 if ks else None),
         ("코스피 RSI 70 이상", f"{ks['rsi']:.0f}" if ks else "-", ks["rsi"] >= 70 if ks else None),
-        ("VIX 25 이상 또는 10일간 30% 이상 급등", f"{vix['last']:.1f}" if vix else "-",
-         (vix["last"] >= 25 or (vix["pct10"] is not None and vix["pct10"] >= 30)) if vix else None),
+        # 2026-11-16: 'VIX 25↑ 또는 10일 30%↑ 급등' → '200일 이격 150↑'. 검증(risk_study.py, 2000~2026 코스피)에서 VIX 25↑ 뒤 60일 평균 +7%(전체 +2.6%)로
+        # 위험이 아니라 바닥 쪽으로 작동. 200일 이격 150↑는 60일 안 -10% 하락 확률 63%(전체 28%), 사례 1998~99·2026(표본 작음)
+        ("코스피 200일 이격도 150 이상(장기 과열)", f"{ks['disp200']:.1f}" if ks and ks.get("disp200") is not None else "-",
+         (ks["disp200"] >= 150) if ks and ks.get("disp200") is not None else None),
         ("미국 10년물 금리 10일간 0.3%p 이상 상승", f"{y10['chg10']:+.2f}%p" if y10 and y10["chg10"] is not None else "-",
          (y10["chg10"] >= 0.3) if y10 and y10["chg10"] is not None else None),
         ("내 종목 70% 이상이 일봉 역배열", f"{bear:.0%}" if bear is not None else "-",
