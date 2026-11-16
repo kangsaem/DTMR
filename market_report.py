@@ -1054,10 +1054,31 @@ def credit_series(cred, dep):
     return df
 
 
+def credit_hist(r, since="2025-01-01"):
+    """날짜별 '그날까지 받은 기간(최대 CREDIT_YEARS년) 중 상위 (100-CREDIT_TOP)%' 여부 — 머니파이 지수 차트의 과거 위험 구간용(2026-11-16).
+    받은 자료가 지금부터 CREDIT_YEARS년이라 오래된 날일수록 비교 기간이 짧음(2025-06이면 약 3.5년)"""
+    d, rr, on = [], [], ""
+    idx, v = r.index, r.values
+    start = pd.Timestamp(since)
+    for i in range(len(r)):
+        if idx[i] < start:
+            continue
+        w = v[(idx >= idx[i] - pd.DateOffset(years=CREDIT_YEARS)) & (idx <= idx[i])]
+        pct = float((w <= v[i]).mean() * 100)
+        d.append(f"{idx[i]:%Y-%m-%d}")
+        rr.append(round(float(v[i]), 2))
+        on += "1" if pct >= CREDIT_TOP else "0"
+    return {"d": d, "r": rr, "on": on}
+
+
 def credit_info(df):
     r = df["ratio"]
     cur = float(r.iloc[-1])
-    return {"ratio": cur, "date": r.index[-1], "dep": float(df["dep"].iloc[-1]), "cred": float(df["cred"].iloc[-1]),
+    try:
+        hist = credit_hist(r)
+    except Exception:
+        hist = None
+    return {"hist": hist, "ratio": cur, "date": r.index[-1], "dep": float(df["dep"].iloc[-1]), "cred": float(df["cred"].iloc[-1]),
             "pct": float((r <= cur).mean() * 100),           # 과거(읽은 기간) 중 오늘보다 낮거나 같은 날 비율
             "max": float(r.max()), "min": float(r.min()), "since": r.index[0], "n": len(r),
             "thr": float(r.quantile(CREDIT_TOP / 100)),      # 상위 10%가 시작되는 값(이 값 이상이면 켜짐)
