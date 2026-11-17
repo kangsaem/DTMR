@@ -300,5 +300,30 @@
   "code": "XLP",
   "name": "State Street Consumer Staples Sel Sect SPDR ETF",
   "watch": true
+ },
+ {
+  "code": "AVGO",
+  "name": "브로드컴",
+  "watch": true
+ },
+ {
+  "code": "CAT",
+  "name": "캐터필러",
+  "watch": true
+ },
+ {
+  "code": "DELL",
+  "name": "델테크놀로지",
+  "watch": true
+ },
+ {
+  "code": "GEV",
+  "name": "GE 버노바",
+  "watch": true
+ },
+ {
+  "code": "VST",
+  "name": "비스트라",
+  "watch": true
  }
 ]
