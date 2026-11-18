@@ -75,7 +75,8 @@ def _yahoo_fix_last(df, code):
     야후 정규장 종가와 비교해 0.3% 넘게 다르면 야후 값으로 바꿈. 머니파이 앱(야후)과 같은 종가가 됨. 실패하면 그대로"""
     try:
         import yfinance as yf
-        y = yf.Ticker(code).history(period="10d", auto_adjust=False)
+        t = yf.Ticker(code)
+        y = t.history(period="10d", auto_adjust=False)
         if y is None or not len(y) or not len(df):
             return df
         y.index = y.index.tz_localize(None).normalize()
@@ -83,6 +84,16 @@ def _yahoo_fix_last(df, code):
         if d not in y.index:
             return df
         yc, fc = float(y.loc[d, "Close"]), float(df["Close"].iloc[-1])
+        try:                                   # 야후 일봉도 마감 직후엔 옛 값일 때가 있어 정규장 가격(meta)을 우선(앱과 같은 방식)
+            m = t.history_metadata or {}
+            mp, mt = m.get("regularMarketPrice"), m.get("regularMarketTime")
+            if mp and mt:
+                md = pd.Timestamp(mt, unit="s", tz="UTC").tz_convert("America/New_York").normalize().tz_localize(None)
+                if md == d:
+                    yc = float(mp)
+        except Exception:
+            pass
+        print(f"종가 확인: {code} {d:%Y-%m-%d} fdr {fc:.4f} / 야후 {yc:.4f}")
         if yc > 0 and fc > 0 and abs(yc / fc - 1) > 0.003:
             print(f"종가 보정(야후): {code} {d:%Y-%m-%d} {fc:.4f} → {yc:.4f}")
             df = df.copy()
