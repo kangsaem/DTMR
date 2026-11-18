@@ -70,53 +70,14 @@ def load_prices(code):
     return _drop_us_open(_load_prices(code), code)
 
 
-def _yahoo_fix_last(df, code):
-    """해외 종목: FinanceDataReader의 마지막 날 종가가 마감 전 값으로 남는 경우가 있어(2026-11-19 OXY 11/18: fdr 53.76, 실제 54.65)
-    야후 정규장 종가와 비교해 0.3% 넘게 다르면 야후 값으로 바꿈. 머니파이 앱(야후)과 같은 종가가 됨. 실패하면 그대로"""
-    try:
-        import yfinance as yf
-        t = yf.Ticker(code)
-        y = t.history(period="10d", auto_adjust=False)
-        if y is None or not len(y) or not len(df):
-            return df
-        y.index = y.index.tz_localize(None).normalize()
-        d = df.index[-1].normalize()
-        if d not in y.index:
-            return df
-        yc, fc = float(y.loc[d, "Close"]), float(df["Close"].iloc[-1])
-        try:                                   # 야후 일봉도 마감 직후엔 옛 값일 때가 있어 정규장 가격(meta)을 우선(앱과 같은 방식)
-            m = t.history_metadata or {}
-            mp, mt = m.get("regularMarketPrice"), m.get("regularMarketTime")
-            if mp and mt:
-                md = pd.Timestamp(mt, unit="s", tz="UTC").tz_convert("America/New_York").normalize().tz_localize(None)
-                if md == d:
-                    yc = float(mp)
-        except Exception:
-            pass
-        print(f"종가 확인: {code} {d:%Y-%m-%d} fdr {fc:.4f} / 야후 {yc:.4f}")
-        if yc > 0 and fc > 0 and abs(yc / fc - 1) > 0.003:
-            print(f"종가 보정(야후): {code} {d:%Y-%m-%d} {fc:.4f} → {yc:.4f}")
-            df = df.copy()
-            i = df.index[-1]
-            df.loc[i, "Close"] = yc
-            for col, f in (("High", max), ("Low", min)):
-                if col in df.columns and col in y.columns and not pd.isna(y.loc[d, col]):
-                    df.loc[i, col] = float(y.loc[d, col])
-                elif col in df.columns:
-                    df.loc[i, col] = f(float(df.loc[i, col]), yc)
-    except Exception as e:
-        print("야후 종가 확인 실패:", code, type(e).__name__, e)
-    return df
-
-
 def _load_prices(code):
-    """국내 코드는 FinanceDataReader, 해외/실패 시 yfinance로 일봉 조회. 해외는 마지막 날 종가를 야후로 확인(2026-11-19)"""
+    """국내 코드는 FinanceDataReader, 해외/실패 시 yfinance로 일봉 조회"""
     base = code.split(".")[0] if code.upper().endswith((".KS", ".KQ")) else code
     try:
         with contextlib.redirect_stdout(io.StringIO()):  # fdr이 찍는 오류 문구는 숨김
             df = fdr.DataReader(base, START)
         if len(df):
-            return df if is_kr(code) else _yahoo_fix_last(df, code)
+            return df
     except Exception:
         pass
     import yfinance as yf
