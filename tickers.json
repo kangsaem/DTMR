@@ -325,5 +325,10 @@
   "code": "VST",
   "name": "비스트라",
   "watch": true
+ },
+ {
+  "code": "122640",
+  "name": "예스티",
+  "watch": true
  }
 ]
