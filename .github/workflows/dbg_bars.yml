@@ -1,0 +1,33 @@
+name: dbg-bars
+
+# 종목 하나의 리포트 계산 근거 덤프(dbg_bars.py, 2026-11-19) — 머니파이 앱 판정과 비교용. 리포트 재실행 없음
+on:
+  workflow_dispatch:
+    inputs:
+      code:
+        description: "종목 코드(예: OXY, 005930)"
+        required: true
+        default: "OXY"
+
+permissions:
+  contents: write
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - run: python dbg_bars.py "${{ github.event.inputs.code }}"
+      - name: 결과 커밋
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git add results/dbg_*.json
+          git commit -q -m "dbg ${{ github.event.inputs.code }}" || exit 0
+          for i in 1 2 3 4 5; do git pull -q --rebase origin ${{ github.ref_name }} && git push -q origin HEAD:${{ github.ref_name }} && exit 0; sleep 5; done
+          exit 1
