@@ -8,6 +8,10 @@ on:
         description: "심볼(예: ^IXIC)"
         required: true
         default: "^IXIC"
+      range:
+        description: "기간(1d·2d)"
+        required: false
+        default: "1d"
 
 permissions:
   contents: write
@@ -19,7 +23,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: 직접
-        run: python dbg_yahoo.py "${{ github.event.inputs.sym }}" 1d 2m
+        run: python dbg_yahoo.py "${{ github.event.inputs.sym }}" "${{ github.event.inputs.range }}" 2m
       - name: 결과 커밋
         run: |
           git config user.name "github-actions[bot]"

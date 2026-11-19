@@ -15,7 +15,7 @@ out = {"url": u, "fetched": fmt(time.time()), "currentTradingPeriod": m.get("cur
        "regularMarketPrice": m.get("regularMarketPrice"), "n": len(ts), "first": fmt(ts[0]) if ts else None, "last": fmt(ts[-1]) if ts else None,
        "nulls": sum(1 for v in cl if v is None), "gaps_over_10m": [[fmt(a), fmt(b)] for a, b in zip(ts, ts[1:]) if b - a > 600][:20],
        "tail": [[fmt(t), v] for t, v in list(zip(ts, cl))[-5:]]}
-safe = sym.replace("^", "").replace("=", "_")
+safe = sym.replace("^", "").replace("=", "_") + "_" + rng
 json.dump(out, open(f"results/dbg_yahoo_{safe}.json", "w"), indent=1, default=str)
 json.dump(j, open(f"results/dbg_yahoo_{safe}_raw.json", "w"))
 print(json.dumps(out, indent=1, default=str))
