@@ -18,4 +18,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
-      - run: python dbg_yahoo.py "${{ github.event.inputs.sym }}" 1d 2m
+      - name: 직접
+        run: python dbg_yahoo.py "${{ github.event.inputs.sym }}" 1d 2m
+      - name: 머니파이 중계로
+        run: VIA_PROXY=1 python dbg_yahoo.py "${{ github.event.inputs.sym }}" 1d 2m

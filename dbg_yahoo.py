@@ -2,7 +2,11 @@
 import json, sys, time, urllib.parse, urllib.request
 sym, rng, itv = (sys.argv[1:] + ["^IXIC", "1d", "2m"][len(sys.argv) - 1:])[:3]
 u = f"https://query1.finance.yahoo.com/v8/finance/chart/{urllib.parse.quote(sym)}?range={rng}&interval={itv}&_={int(time.time())}"
-req = urllib.request.Request(u, headers={"User-Agent": "Mozilla/5.0"})
+import os
+via = os.environ.get("VIA_PROXY")
+if via:                                   # 머니파이 앱과 같은 길(Cloudflare 중계)로
+    u = "https://moneypie-proxy.y0n2.workers.dev/?url=" + urllib.parse.quote(u, safe="")
+req = urllib.request.Request(u, headers={"User-Agent": "Mozilla/5.0", "Origin": "https://kangsaem.github.io", "Referer": "https://kangsaem.github.io/moneypiee/"})
 j = json.load(urllib.request.urlopen(req, timeout=20))
 r = j["chart"]["result"][0]
 m = r["meta"]; ts = r.get("timestamp") or []; cl = r["indicators"]["quote"][0].get("close") or []
