@@ -17,4 +17,5 @@ out = {"url": u, "fetched": fmt(time.time()), "currentTradingPeriod": m.get("cur
        "tail": [[fmt(t), v] for t, v in list(zip(ts, cl))[-5:]]}
 safe = sym.replace("^", "").replace("=", "_")
 json.dump(out, open(f"results/dbg_yahoo_{safe}.json", "w"), indent=1, default=str)
+json.dump(j, open(f"results/dbg_yahoo_{safe}_raw.json", "w"))
 print(json.dumps(out, indent=1, default=str))
