@@ -1,0 +1,21 @@
+name: dbg-yahoo
+
+# 야후 chart API 원본 응답 점검(dbg_yahoo.py, 2026-11-19) — 머니파이 지수 카드 그래프 점검용
+on:
+  workflow_dispatch:
+    inputs:
+      sym:
+        description: "심볼(예: ^IXIC)"
+        required: true
+        default: "^IXIC"
+
+permissions:
+  contents: write
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - run: python dbg_yahoo.py "${{ github.event.inputs.sym }}" 1d 2m
