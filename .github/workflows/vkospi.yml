@@ -1,0 +1,45 @@
+name: vkospi-backfill
+
+# VKOSPI 과거 자료 받기(KRX Open API, 날짜마다 1회 호출) → data/vkospi.csv 커밋 (2026-11-23)
+# 중간에 시간이 다 되면 받은 데까지 커밋 → 다시 실행하면 이어서 받음
+on:
+  workflow_dispatch:
+    inputs:
+      minutes:
+        description: "받는 시간 제한(분)"
+        required: true
+        default: "100"
+
+permissions:
+  contents: write
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: 받기
+        env:
+          KRX_API_KEY: ${{ secrets.KRX_API_KEY }}
+          MIN: ${{ inputs.minutes }}
+        run: python vkospi.py backfill "$MIN"
+      - name: 커밋
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          [ -f data/vkospi.csv ] || exit 0
+          for i in $(seq 1 8); do
+            cp data/vkospi.csv /tmp/vk.csv
+            git fetch -q origin ${{ github.ref_name }} && git reset -q --hard origin/${{ github.ref_name }}
+            mkdir -p data && cp /tmp/vk.csv data/vkospi.csv
+            git add data/vkospi.csv
+            git commit -q -m "VKOSPI 자료 $(tail -1 data/vkospi.csv | cut -d, -f1) [skip ci]" || exit 0
+            git push -q origin HEAD:${{ github.ref_name }} && exit 0
+            sleep $((i * 5))
+          done
+          exit 1
