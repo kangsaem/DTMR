@@ -1,0 +1,9 @@
+키 없음(Secrets KRX_API_KEY 확인)
+실패 https://data-dbg.krx.co.kr/svc/apis/idx/drvprod_dd_trd?basDd=20261120 <HTTPError 401: 'Unauthorized'>
+실패 https://data-dbg.krx.co.kr/svc/apis/idx/drvprod_dd_trd?basDd=20261119 <HTTPError 401: 'Unauthorized'>
+실패 https://data-dbg.krx.co.kr/svc/apis/idx/drvprod_dd_trd?basDd=20261118 <HTTPError 401: 'Unauthorized'>
+실패 https://openapi.krx.co.kr/svc/apis/idx/drvprod_dd_trd?basDd=20261120 <HTTPError 404: 'Not Found'>
+실패 https://openapi.krx.co.kr/svc/apis/idx/drvprod_dd_trd?basDd=20261119 <HTTPError 404: 'Not Found'>
+실패 https://openapi.krx.co.kr/svc/apis/idx/drvprod_dd_trd?basDd=20261118 <HTTPError 404: 'Not Found'>
+실패 https://data-dbg.krx.co.kr/svc/apis/idx/kospi_dd_trd?basDd=20261120 <HTTPError 401: 'Unauthorized'>
+실패 https://openapi.krx.co.kr/svc/apis/idx/kospi_dd_trd?basDd=20261120 <HTTPError 404: 'Not Found'>
