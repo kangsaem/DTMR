@@ -82,5 +82,7 @@ for nm, sp in SP.items():
 print()
 print("2025~ 신호(날짜·60일 뒤)")
 for nm, a in detail.items():
-    s = ", ".join(f"{d:%y.%m.%d}({r:+.0f})" if pd.notna(r) else f"{d:%y.%m.%d}(-)" for d, r in zip(a["d"], a["r60"]) if d.year >= 2025)
+    s = ", ".join((f"{d:%y.%m.%d}({r:+.0f}" if pd.notna(r) else f"{d:%y.%m.%d}(지금 {(ks.iloc[-1] / ks.loc[d] - 1) * 100:+.0f}") + f", 최저 {mae:+.0f})" for d, r, mae in zip(a["d"], a["r60"], a["mae"]) if d.year >= 2025)
+    w = a.loc[a["mae"].idxmin()]
+    s += f"  ← 최악 {w['d']:%y.%m.%d} {w['mae']:+.1f}%"
     print(f"  {nm:<26}: {s}")
