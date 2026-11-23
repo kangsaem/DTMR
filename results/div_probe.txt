@@ -1,0 +1,95 @@
+========== 005930
+ OK https://m.stock.naver.com/api/stock/005930/integration | 최상위 키: ['stockEndType', 'itemCode', 'reutersCode', 'stockName', 'totalInfos', 'iconInfos', 'description', 'etfKeyIndicator', 'dealTrendInfos', 'researches', 'industryCode', 'industryCompareInfo', 'consensusInfo', 'shareholdersMeetingInfo', 'irScheduleInfo']
+   ITEM .totalInfos[16] {"code": "dividendYieldRatio", "key": "배당수익률", "value": "0.95%", "valueDesc": "2025.12."}
+   ITEM .totalInfos[17] {"code": "dividend", "key": "주당배당금", "value": "1,668원", "valueDesc": "2025.12."}
+   KEY .dealTrendInfos[0].individualPureBuyQuant = "+4,051,865"
+   KEY .dealTrendInfos[1].individualPureBuyQuant = "+735,721"
+   KEY .dealTrendInfos[2].individualPureBuyQuant = "-294,766"
+   KEY .dealTrendInfos[3].individualPureBuyQuant = "+1,564,790"
+   KEY .dealTrendInfos[4].individualPureBuyQuant = "+2,197,588"
+ OK https://m.stock.naver.com/api/stock/005930/basic | 최상위 키: ['stockEndType', 'itemCode', 'reutersCode', 'stockName', 'itemLogoUrl', 'itemLogoPngUrl', 'sosok', 'closePrice', 'compareToPreviousClosePrice', 'compareToPreviousPrice', 'fluctuationsRatio', 'marketStatus', 'marketStatusDetailType', 'localTradedAt', 'tradeStopType', 'tradableStatus', 'tradableStatusCode', 'tradableStatusUpdatedAt', 'stockExchangeType', 'stockExchangeName', 'imageCharts', 'imageChartUrlInfo', 'scriptChartTypes', 'delayTime', 'delayTimeName']
+ 실패 https://m.stock.naver.com/api/stock/005930/etfAnalysis HTTP Error 404: 404
+ OK https://polling.finance.naver.com/api/realtime/domestic/stock/005930 | 최상위 키: ['pollingInterval', 'datas', 'time']
+========== 088980
+ OK https://m.stock.naver.com/api/stock/088980/integration | 최상위 키: ['stockEndType', 'itemCode', 'reutersCode', 'stockName', 'totalInfos', 'iconInfos', 'description', 'etfKeyIndicator', 'dealTrendInfos', 'researches', 'industryCode', 'industryCompareInfo', 'consensusInfo', 'shareholdersMeetingInfo', 'irScheduleInfo']
+   ITEM .totalInfos[16] {"code": "dividendYieldRatio", "key": "배당수익률", "value": "7.93%", "valueDesc": "2025.12."}
+   ITEM .totalInfos[17] {"code": "dividend", "key": "주당배당금", "value": "760원", "valueDesc": "2025.12."}
+   KEY .dealTrendInfos[0].individualPureBuyQuant = "-405,398"
+   KEY .dealTrendInfos[1].individualPureBuyQuant = "+310,225"
+   KEY .dealTrendInfos[2].individualPureBuyQuant = "-47,235"
+   KEY .dealTrendInfos[3].individualPureBuyQuant = "+127,628"
+   KEY .dealTrendInfos[4].individualPureBuyQuant = "-200,444"
+ OK https://m.stock.naver.com/api/stock/088980/basic | 최상위 키: ['stockEndType', 'itemCode', 'reutersCode', 'stockName', 'itemLogoUrl', 'itemLogoPngUrl', 'sosok', 'closePrice', 'compareToPreviousClosePrice', 'compareToPreviousPrice', 'fluctuationsRatio', 'marketStatus', 'marketStatusDetailType', 'localTradedAt', 'tradeStopType', 'tradableStatus', 'tradableStatusCode', 'tradableStatusUpdatedAt', 'stockExchangeType', 'stockExchangeName', 'imageCharts', 'imageChartUrlInfo', 'scriptChartTypes', 'delayTime', 'delayTimeName']
+   KEY .stockDividendEvent = {"eventStartDateTime": "2026-06-29T21:00:00", "dividendPaymentDate": "2026-08-28", "exDividendDate": "2026-06-29", "dps": 350.0, "currencyCode": "KRW"}
+   KEY .stockDividendEvent.dividendPaymentDate = "2026-08-28"
+   KEY .stockDividendEvent.exDividendDate = "2026-06-29"
+ 실패 https://m.stock.naver.com/api/stock/088980/etfAnalysis HTTP Error 404: 404
+ OK https://polling.finance.naver.com/api/realtime/domestic/stock/088980 | 최상위 키: ['pollingInterval', 'datas', 'time']
+========== 247540
+ OK https://m.stock.naver.com/api/stock/247540/integration | 최상위 키: ['stockEndType', 'itemCode', 'reutersCode', 'stockName', 'totalInfos', 'iconInfos', 'description', 'etfKeyIndicator', 'dealTrendInfos', 'researches', 'industryCode', 'industryCompareInfo', 'consensusInfo', 'shareholdersMeetingInfo', 'irScheduleInfo']
+   ITEM .totalInfos[18] {"code": "dividendYieldRatio", "key": "배당수익률", "value": "0.12%", "valueDesc": "2026.03."}
+   ITEM .totalInfos[19] {"code": "dividend", "key": "주당배당금", "value": "98원", "valueDesc": "2026.03."}
+   KEY .dealTrendInfos[0].individualPureBuyQuant = "+14,968"
+   KEY .dealTrendInfos[1].individualPureBuyQuant = "-7,869"
+   KEY .dealTrendInfos[2].individualPureBuyQuant = "+12,761"
+   KEY .dealTrendInfos[3].individualPureBuyQuant = "+1,305"
+   KEY .dealTrendInfos[4].individualPureBuyQuant = "+81,884"
+ OK https://m.stock.naver.com/api/stock/247540/basic | 최상위 키: ['stockEndType', 'itemCode', 'reutersCode', 'stockName', 'itemLogoUrl', 'itemLogoPngUrl', 'sosok', 'closePrice', 'compareToPreviousClosePrice', 'compareToPreviousPrice', 'fluctuationsRatio', 'marketStatus', 'marketStatusDetailType', 'localTradedAt', 'tradeStopType', 'tradableStatus', 'tradableStatusCode', 'tradableStatusUpdatedAt', 'stockExchangeType', 'stockExchangeName', 'imageCharts', 'imageChartUrlInfo', 'scriptChartTypes', 'delayTime', 'delayTimeName']
+   KEY .stockDividendEvent = {"eventStartDateTime": "2026-03-30T21:00:00", "dividendPaymentDate": "2026-04-22", "exDividendDate": "2026-03-30", "dps": 100.0, "currencyCode": "KRW"}
+   KEY .stockDividendEvent.dividendPaymentDate = "2026-04-22"
+   KEY .stockDividendEvent.exDividendDate = "2026-03-30"
+ 실패 https://m.stock.naver.com/api/stock/247540/etfAnalysis HTTP Error 404: 404
+ OK https://polling.finance.naver.com/api/realtime/domestic/stock/247540 | 최상위 키: ['pollingInterval', 'datas', 'time']
+========== 069500
+ OK https://m.stock.naver.com/api/stock/069500/integration | 최상위 키: ['stockEndType', 'itemCode', 'reutersCode', 'stockName', 'totalInfos', 'iconInfos', 'description', 'etfKeyIndicator', 'dealTrendInfos', 'researches', 'industryCode', 'industryCompareInfo', 'consensusInfo', 'shareholdersMeetingInfo', 'irScheduleInfo']
+   ITEM .iconInfos[0] {"code": "isDividend", "value": "Y"}
+   KEY .etfKeyIndicator.dividendYieldTtm = 1.11
+   KEY .dealTrendInfos[0].individualPureBuyQuant = "+912,519"
+   KEY .dealTrendInfos[1].individualPureBuyQuant = "-19,073"
+   KEY .dealTrendInfos[2].individualPureBuyQuant = "-115,688"
+   KEY .dealTrendInfos[3].individualPureBuyQuant = "+711,482"
+   KEY .dealTrendInfos[4].individualPureBuyQuant = "+383,285"
+ OK https://m.stock.naver.com/api/stock/069500/basic | 최상위 키: ['stockEndType', 'itemCode', 'reutersCode', 'stockName', 'itemLogoUrl', 'itemLogoPngUrl', 'sosok', 'closePrice', 'compareToPreviousClosePrice', 'compareToPreviousPrice', 'fluctuationsRatio', 'marketStatus', 'marketStatusDetailType', 'localTradedAt', 'tradeStopType', 'tradableStatus', 'tradableStatusCode', 'tradableStatusUpdatedAt', 'stockExchangeType', 'stockExchangeName', 'imageCharts', 'imageChartUrlInfo', 'scriptChartTypes', 'delayTime', 'delayTimeName']
+ OK https://m.stock.naver.com/api/stock/069500/etfAnalysis | 최상위 키: ['itemCode', 'itemName', 'etfSummary', 'listedDate', 'issuerName', 'etfBaseIndex', 'marketValue', 'totalNav', 'nav', 'etfChaseEarningRateSymbol', 'etfChaseEarningRate', 'deviationSign', 'deviationRate', 'totalFee', 'chaseErrorRate', 'taxationTypeCode', 'themeReturns', 'returnPerformanceReferenceDate', 'returnPerformanceList', 'navPerformanceReferenceDate', 'navPerformanceList', 'cumulativeNetInflowList', 'assetPortfolioTotalWeight', 'assetPortfolioList', 'countryPortfolioTotalWeight']
+   KEY .dividend = {"dividendYieldTtm": 1.11, "dividendPerShareTtm": 845, "dividendCountThisYear": 4, "dividendMonthThisYear": "1,4,7,10"}
+   KEY .dividend.dividendYieldTtm = 1.11
+   KEY .dividend.dividendPerShareTtm = 845
+   KEY .dividend.dividendCountThisYear = 4
+   KEY .dividend.dividendMonthThisYear = "1,4,7,10"
+ OK https://polling.finance.naver.com/api/realtime/domestic/stock/069500 | 최상위 키: ['pollingInterval', 'datas', 'time']
+========== 458730
+ OK https://m.stock.naver.com/api/stock/458730/integration | 최상위 키: ['stockEndType', 'itemCode', 'reutersCode', 'stockName', 'totalInfos', 'iconInfos', 'description', 'etfKeyIndicator', 'dealTrendInfos', 'researches', 'industryCode', 'industryCompareInfo', 'consensusInfo', 'shareholdersMeetingInfo', 'irScheduleInfo']
+   ITEM .totalInfos[16] {"code": "etfBaseIdx", "key": "기초지수", "value": "Dow Jones U.S. Dividend 100 Price Return Index"}
+   ITEM .iconInfos[0] {"code": "isDividend", "value": "Y"}
+   KEY .etfKeyIndicator.dividendYieldTtm = 3.03
+   KEY .dealTrendInfos[0].individualPureBuyQuant = "-48,886"
+   KEY .dealTrendInfos[1].individualPureBuyQuant = "+182,475"
+   KEY .dealTrendInfos[2].individualPureBuyQuant = "-14,453"
+   KEY .dealTrendInfos[3].individualPureBuyQuant = "+131,366"
+   KEY .dealTrendInfos[4].individualPureBuyQuant = "+44,894"
+ OK https://m.stock.naver.com/api/stock/458730/basic | 최상위 키: ['stockEndType', 'itemCode', 'reutersCode', 'stockName', 'itemLogoUrl', 'itemLogoPngUrl', 'sosok', 'closePrice', 'compareToPreviousClosePrice', 'compareToPreviousPrice', 'fluctuationsRatio', 'marketStatus', 'marketStatusDetailType', 'localTradedAt', 'tradeStopType', 'tradableStatus', 'tradableStatusCode', 'tradableStatusUpdatedAt', 'stockExchangeType', 'stockExchangeName', 'imageCharts', 'imageChartUrlInfo', 'scriptChartTypes', 'delayTime', 'delayTimeName']
+ OK https://m.stock.naver.com/api/stock/458730/etfAnalysis | 최상위 키: ['itemCode', 'itemName', 'etfSummary', 'listedDate', 'issuerName', 'etfBaseIndex', 'marketValue', 'totalNav', 'nav', 'etfChaseEarningRateSymbol', 'etfChaseEarningRate', 'deviationSign', 'deviationRate', 'totalFee', 'chaseErrorRate', 'taxationTypeCode', 'themeReturns', 'returnPerformanceReferenceDate', 'returnPerformanceList', 'navPerformanceReferenceDate', 'navPerformanceList', 'cumulativeNetInflowList', 'assetPortfolioTotalWeight', 'assetPortfolioList', 'countryPortfolioTotalWeight']
+   KEY .dividend = {"dividendYieldTtm": 3.03, "dividendPerShareTtm": 439, "dividendCountThisYear": 10, "dividendMonthThisYear": "1,2,3,4,5,6,7,8,9,10"}
+   KEY .dividend.dividendYieldTtm = 3.03
+   KEY .dividend.dividendPerShareTtm = 439
+   KEY .dividend.dividendCountThisYear = 10
+   KEY .dividend.dividendMonthThisYear = "1,2,3,4,5,6,7,8,9,10"
+ OK https://polling.finance.naver.com/api/realtime/domestic/stock/458730 | 최상위 키: ['pollingInterval', 'datas', 'time']
+   ITEM .datas[0] {"itemCode": "458730", "stockName": "TIGER 미국배당다우존스", "stockExchangeType": {"code": "KS", "zoneId": "Asia/Seoul", "nationType": "KOR", "delayTime": 0, "startTime": "0900", "endTime": "1530", "closePri
+========== 122630
+ OK https://m.stock.naver.com/api/stock/122630/integration | 최상위 키: ['stockEndType', 'itemCode', 'reutersCode', 'stockName', 'totalInfos', 'iconInfos', 'description', 'etfKeyIndicator', 'dealTrendInfos', 'researches', 'industryCode', 'industryCompareInfo', 'consensusInfo', 'shareholdersMeetingInfo', 'irScheduleInfo']
+   ITEM .iconInfos[1] {"code": "isDividend", "value": "N"}
+   KEY .etfKeyIndicator.dividendYieldTtm = 0.0
+   KEY .dealTrendInfos[0].individualPureBuyQuant = "+1,976,146"
+   KEY .dealTrendInfos[1].individualPureBuyQuant = "+352,628"
+   KEY .dealTrendInfos[2].individualPureBuyQuant = "-614,240"
+   KEY .dealTrendInfos[3].individualPureBuyQuant = "+1,376,149"
+   KEY .dealTrendInfos[4].individualPureBuyQuant = "+578,217"
+ OK https://m.stock.naver.com/api/stock/122630/basic | 최상위 키: ['stockEndType', 'itemCode', 'reutersCode', 'stockName', 'itemLogoUrl', 'itemLogoPngUrl', 'sosok', 'closePrice', 'compareToPreviousClosePrice', 'compareToPreviousPrice', 'fluctuationsRatio', 'marketStatus', 'marketStatusDetailType', 'localTradedAt', 'tradeStopType', 'tradableStatus', 'tradableStatusCode', 'tradableStatusUpdatedAt', 'stockExchangeType', 'stockExchangeName', 'imageCharts', 'imageChartUrlInfo', 'scriptChartTypes', 'delayTime', 'delayTimeName']
+ OK https://m.stock.naver.com/api/stock/122630/etfAnalysis | 최상위 키: ['itemCode', 'itemName', 'etfSummary', 'listedDate', 'issuerName', 'etfBaseIndex', 'marketValue', 'totalNav', 'nav', 'etfChaseEarningRateSymbol', 'etfChaseEarningRate', 'deviationSign', 'deviationRate', 'totalFee', 'chaseErrorRate', 'taxationTypeCode', 'themeReturns', 'returnPerformanceReferenceDate', 'returnPerformanceList', 'navPerformanceReferenceDate', 'navPerformanceList', 'cumulativeNetInflowList', 'assetPortfolioTotalWeight', 'assetPortfolioList', 'countryPortfolioTotalWeight']
+   KEY .dividend = {"dividendYieldTtm": 0.0, "dividendPerShareTtm": 0, "dividendCountThisYear": 0, "dividendMonthThisYear": ""}
+   KEY .dividend.dividendYieldTtm = 0.0
+   KEY .dividend.dividendPerShareTtm = 0
+   KEY .dividend.dividendCountThisYear = 0
+   KEY .dividend.dividendMonthThisYear = ""
+ OK https://polling.finance.naver.com/api/realtime/domestic/stock/122630 | 최상위 키: ['pollingInterval', 'datas', 'time']
