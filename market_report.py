@@ -1224,7 +1224,8 @@ def vkospi_info(kc=None):
     f = lambda x, n=2: None if pd.isna(x) else round(float(x), n)
     lo_i = r["k"].tail(20).idxmin()
     return {"last": float(t["vk"]), "date": r.index[-1], "d5": f(t["d5"]), "on": bool(t["on"]), "stage": int(t["stage"]),
-            "wait": int(t["wait"]), "wait_max": VK_WAIT, "turn_d": f"{t['turn_d']:%Y-%m-%d}" if not pd.isna(t["turn_d"]) else None,
+            "wait": min(int(t["wait"]), VK_WAIT), "wait_max": VK_WAIT,   # 표시만 20 넘지 않게(마지막 날 21로 나오던 것, 판정은 그대로 — 2026-11-23)
+            "turn_d": f"{t['turn_d']:%Y-%m-%d}" if not pd.isna(t["turn_d"]) else None,
             "ma": f(t["ma"]), "thr": f(t["thr"]), "spike": bool(t["spike"]), "neg": bool(t["neg"]),
             "peak": f(pk.max()), "peak_d": f"{pk.idxmax():%Y-%m-%d}",
             "k": f(t["k"]), "kma": f(t["kma"]), "nolow": bool(t["nolow"]), "ma_ok": bool(t["ma_ok"]),
