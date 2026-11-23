@@ -1106,8 +1106,10 @@ def market_snapshot():
             snap["idx"][key] = _index_info(nm, _index_close(fc, yc))
         except Exception as e:
             snap["err"].append(f"{nm} ({type(e).__name__})")
+    ks_s = None
     try:
         ks = fdr.DataReader("KS11", START)["Close"].dropna()
+        ks_s = ks
         disp = (ks / ks.rolling(50).mean() * 100).dropna()
         d200 = (ks / ks.rolling(200).mean() * 100).dropna()     # 200일선 이격도(위험 '장기 과열', 2026-11-16)
         hi250 = ks.rolling(250, min_periods=1).max().iloc[-1]
@@ -1132,7 +1134,7 @@ def market_snapshot():
             snap["err"].append(f"{nm} ({type(e).__name__})")
     snap["vk"] = None
     try:
-        snap["vk"] = vkospi_info()
+        snap["vk"] = vkospi_info(ks_s)
         if snap["vk"] is None:
             snap["err"].append("VKOSPI (자료 없음)")
     except Exception as e:
@@ -1150,34 +1152,95 @@ def market_snapshot():
     return snap
 
 
-VK_TH = 30.0          # VKOSPI 바닥 항목(2026-11-23, B안): 이 값 이하 + 최근 VK_WIN거래일 안에 이 값을 넘은 적 있음
-VK_WIN = 60           #   = 변동성 진정·외국인 수급 복귀 확인(하락이 끝날 때 마지막에 켜지는 쪽)
+# VKOSPI 바닥 항목(2026-11-23 사용자, vkrules·vkslope 비교 뒤 결정): 'VKOSPI 꺾임 + 코스피 회복' — 3단계
+#  ① 급등: 60일 최고 ≥ 30 이고 20일 최고 ≥ 120일 중간값 × VK_SPIKE
+#  ② 꺾임: 급등 중 'VKOSPI가 5거래일 전보다 낮음'이 VK_NEG일 연속 + 20일 평균 아래 — 꺼짐→켜짐 날부터 VK_WAIT거래일 기다림
+#  ③ 코스피 회복: 기다리는 동안 '최근 20거래일 첫날이 최저(신저점 없음) + 종가 ≥ 20일선'이 처음 맞는 날 → 켜짐, VK_ON거래일 유지
+#  기다림 안에 회복이 없으면 처음부터. 백테스트(2010~2026): 14회, 60일 뒤 +12.2% 10/14, 60일 안 최악 추가하락 -10.1%
+VK_SPIKE, VK_NEG, VK_WAIT, VK_ON = 1.5, 3, 20, 20
 VK_HIST_FROM = "2025-01-01"
+VK_CHART = 126          # 팝업 그래프 = 최근 6개월(거래일)
 
 
-def vkospi_on(s):
-    """날짜별 켜짐(0/1) Series: 그날 ≤ VK_TH 이고 그날까지 최근 VK_WIN거래일(그날 포함) 중 > VK_TH 인 날이 있음"""
-    hi = (s > VK_TH).astype(int).rolling(VK_WIN, min_periods=1).max()
-    return ((s <= VK_TH) & (hi > 0)).astype(int)
+def vk_rule(vk, kc):
+    """vk·kc(코스피 종가) 날짜별 DataFrame: stage(0~3) · on · wait(기다린 날 1~VK_WAIT, 아니면 0) · turn_d(꺾임 시작일) · 조건값"""
+    import numpy as np
+    vk = vk[vk.index.isin(kc.index)]
+    k = kc.reindex(vk.index)
+    ma = vk.rolling(20).mean()
+    mx60 = vk.rolling(60, min_periods=20).max()
+    thr = vk.rolling(120, min_periods=60).median() * VK_SPIKE
+    spike = (mx60 >= 30) & (vk.rolling(20).max() >= thr)
+    neg = (vk.diff(5) < 0).astype(int).rolling(VK_NEG).min().fillna(0).astype(bool)
+    turn = (spike & neg & (vk < ma)).fillna(False)
+    edge = turn & ~turn.shift(1, fill_value=False)
+    kma = kc.rolling(20).mean().reindex(vk.index)
+    nolow = (kc.rolling(20).apply(lambda x: np.argmin(x) == 0, raw=True) == 1).reindex(vk.index).fillna(False)
+    ma_ok = (k >= kma).fillna(False)
+    stage, on, wait, tds = [], [], [], []
+    w0 = None; on_left = 0; td = None
+    for i, d in enumerate(vk.index):
+        if on_left > 0:
+            on_left -= 1
+            stage.append(3); on.append(True); wait.append(0); tds.append(td)
+            continue
+        if edge.iloc[i]:
+            w0, td = i, d                       # 꺾임 시작 → 기다림 시작(새 꺾임이면 다시 셈)
+        if w0 is not None and i - w0 >= VK_WAIT + 1:
+            w0 = None                           # 21거래일째 = 기다림 끝(회복 없음)
+        if w0 is not None and nolow.iloc[i] and ma_ok.iloc[i]:
+            w0 = None; on_left = VK_ON - 1
+            stage.append(3); on.append(True); wait.append(0); tds.append(td); continue
+        if w0 is not None:
+            stage.append(2); on.append(False); wait.append(i - w0 + 1); tds.append(td)
+        else:
+            stage.append(1 if spike.iloc[i] else 0); on.append(False); wait.append(0); tds.append(None)
+    return pd.DataFrame({"vk": vk, "ma": ma, "thr": thr, "mx60": mx60, "d5": vk.diff(5), "spike": spike, "neg": neg,
+                         "k": k, "kma": kma, "klo": kc.rolling(20).min().reindex(vk.index), "nolow": nolow, "ma_ok": ma_ok,
+                         "stage": stage, "on": on, "wait": wait, "turn_d": tds}, index=vk.index)
 
 
-def vkospi_info():
-    """KRX VKOSPI(data/vkospi.csv, 오늘 실행에서 모자란 날을 먼저 받음). 없으면 None"""
+def vkospi_info(kc=None):
+    """KRX VKOSPI(data/vkospi.csv, 오늘 실행에서 모자란 날을 먼저 받음) + 코스피 종가 → 판정. 없으면 None"""
     import vkospi
     try:
         vkospi.update(limit_min=5, log=lambda *a: None)      # 보통 1~2일치. 키가 없거나 실패해도 쌓인 파일로 계속
     except Exception as e:
         print("VKOSPI 받기 실패:", type(e).__name__, str(e)[:200])
     s = vkospi.series()
-    if s.empty:
+    if s.empty or kc is None or kc.empty:
         return None
-    on = vkospi_on(s)
-    w = s.tail(VK_WIN)
-    h = s[s.index >= VK_HIST_FROM]
-    return {"last": float(s.iloc[-1]), "chg": float(s.iloc[-1] - s.iloc[-2]) if len(s) > 1 else None, "date": s.index[-1],
-            "max60": float(w.max()), "over60": int((w > VK_TH).sum()), "on": bool(on.iloc[-1]), "th": VK_TH, "win": VK_WIN,
-            "hist": {"d": [f"{d:%Y-%m-%d}" for d in h.index], "v": [round(float(x), 2) for x in h.values],
-                     "on": "".join(str(int(x)) for x in on[h.index].values)}}
+    r = vk_rule(s, kc)
+    if r.empty:
+        return None
+    t = r.iloc[-1]
+    h = r[r.index >= VK_HIST_FROM]
+    c = r.tail(VK_CHART)
+    pk = r["vk"].tail(60)
+    f = lambda x, n=2: None if pd.isna(x) else round(float(x), n)
+    lo_i = r["k"].tail(20).idxmin()
+    return {"last": float(t["vk"]), "date": r.index[-1], "d5": f(t["d5"]), "on": bool(t["on"]), "stage": int(t["stage"]),
+            "wait": int(t["wait"]), "wait_max": VK_WAIT, "turn_d": f"{t['turn_d']:%Y-%m-%d}" if not pd.isna(t["turn_d"]) else None,
+            "ma": f(t["ma"]), "thr": f(t["thr"]), "spike": bool(t["spike"]), "neg": bool(t["neg"]),
+            "peak": f(pk.max()), "peak_d": f"{pk.idxmax():%Y-%m-%d}",
+            "k": f(t["k"]), "kma": f(t["kma"]), "nolow": bool(t["nolow"]), "ma_ok": bool(t["ma_ok"]),
+            "klo": f(r["k"].tail(20).min()), "klo_d": f"{lo_i:%Y-%m-%d}",
+            "rule": {"spike": VK_SPIKE, "neg": VK_NEG, "wait": VK_WAIT, "on": VK_ON},
+            "chart": {"d": [f"{d:%Y-%m-%d}" for d in c.index], "v": [f(x) for x in c["vk"]], "ma": [f(x) for x in c["ma"]],
+                      "k": [f(x) for x in c["k"]], "kma": [f(x) for x in c["kma"]], "klo": [f(x) for x in c["klo"]],
+                      "st": "".join(str(x) for x in c["stage"])},
+            "hist": {"d": [f"{d:%Y-%m-%d}" for d in h.index], "v": [f(x) for x in h["vk"]],
+                     "on": "".join("1" if x else "0" for x in h["on"])}}
+
+
+def vk_text(vk):
+    """한 줄 요약(텔레그램·게이지 값)"""
+    if not vk:
+        return "-"
+    d5 = f" (5일 {vk['d5']:+.1f})" if vk.get("d5") is not None else ""
+    st = vk["stage"]
+    tail = {3: "켜짐", 2: f"가격 대기 {vk['wait']}/{vk['wait_max']}일", 1: "급등", 0: ""}[st]
+    return f"{vk['last']:.1f}{d5} · {st}/3단계" + (f"({tail})" if tail and st else "")
 
 
 def _level(score, total, kind):
@@ -1221,10 +1284,8 @@ def market_signals(snap, results):
         ("VIX 30 이상", f"{vix['last']:.1f}" if vix else "-", vix["last"] >= 30 if vix else None),
         ("내 종목 30% 이상이 RSI 35 이하", f"{weak:.0%}" if weak is not None else "-",
          (weak >= 0.3) if weak is not None else None),
-        # 2026-11-23(B안): 변동성 진정 확인 — 하락이 끝날 때 마지막에 켜지는 항목. KRX Open API(vkospi.py)
-        (f"VKOSPI {VK_TH:.0f} 이하\n(최근 {VK_WIN}거래일 안에 {VK_TH:.0f} 넘은 뒤)",
-         (f"{vk['last']:.1f}" + (f" · 최고 {vk['max60']:.0f}" if vk["max60"] > VK_TH else "")) if vk else "-",
-         vk["on"] if vk else None),
+        # 2026-11-23: 'VKOSPI 꺾임 + 코스피 회복'(vk_rule 3단계, 켜짐 = 3단계). 자료 = KRX Open API(vkospi.py)
+        ("VKOSPI 꺾임 + 코스피 회복", vk_text(vk) if vk else "-", vk["on"] if vk else None),
     ]
     out = {}
     for key, items in (("risk", risk), ("bottom", bottom)):
@@ -1252,8 +1313,7 @@ def market_text(snap):
             L.append(f"{nm} {v['last']:.2f}{unit} (전일 대비 {v['chg']:+.2f}, {v['date']:%m-%d})")
     vk = snap.get("vk")
     if vk:
-        L.append(f"VKOSPI {vk['last']:.2f}" + (f" (전일 대비 {vk['chg']:+.2f}" if vk["chg"] is not None else " (") + f", {vk['date']:%m-%d})"
-                 f" · 최근 {vk['win']}거래일 최고 {vk['max60']:.1f}")
+        L.append(f"VKOSPI {vk_text(vk)} ({vk['date']:%m-%d}) · 60일 최고 {vk['peak']:.1f}({vk['peak_d'][5:]})")
     cr = snap.get("credit")
     if cr:
         L.append(f"신용잔고/고객예탁금 {cr['ratio']:.1f}% (신용 {cr['cred'] / 1e4:,.1f}조 / 예탁금 {cr['dep'] / 1e4:,.1f}조, {cr['date']:%m-%d})"
