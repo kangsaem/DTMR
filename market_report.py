@@ -1247,6 +1247,16 @@ def vk_text(vk):
     return f"{vk['last']:.1f}{d5} · {st}/3단계" + (f"({tail})" if tail and st else "")
 
 
+def _vk_stale(vk, ks):
+    """VKOSPI 날짜가 코스피 마지막 날보다 이르면 ' (MM/DD 기준)' — KRX는 그날 자료를 보통 다음 날 아침에 올림(2026-11-23)"""
+    try:
+        if ks and vk.get("date") is not None and pd.Timestamp(vk["date"]).normalize() < pd.Timestamp(ks["date"]).normalize():
+            return f" ({pd.Timestamp(vk['date']):%m/%d} 기준)"
+    except Exception:
+        pass
+    return ""
+
+
 def _level(score, total, kind):
     ratio = score / total if total else 0
     hi, mid = ratio >= 0.6, ratio >= 0.3      # 5개면 3개 이상 / 2개, 6개면 4개 이상 / 2개
@@ -1289,12 +1299,12 @@ def market_signals(snap, results):
         ("내 종목 30% 이상이 RSI 35 이하", f"{weak:.0%}" if weak is not None else "-",
          (weak >= 0.3) if weak is not None else None),
         # 2026-11-23: 'VKOSPI 꺾임 + 코스피 회복'(vk_rule 3단계, 켜짐 = 3단계). 자료 = KRX Open API(vkospi.py)
-        ("VKOSPI 꺾임 + 코스피 회복", vk_text(vk) if vk else "-", vk["on"] if vk else None),
+        ("VKOSPI 꺾임 + 코스피 회복", (vk_text(vk) + _vk_stale(vk, ks)) if vk else "-", vk["on"] if vk else None),
     ]
     out = {}
     for key, items in (("risk", risk), ("bottom", bottom)):
         score = sum(1 for _, _, st in items if st)
-        total = sum(1 for _, _, st in items if st is not None)
+        total = len(items)      # 2026-11-23: 자료 없는 항목도 분모에(전엔 자료 있는 항목만 세어 5/5로 보임)
         label, cls = _level(score, len(items), key)   # 데이터가 없는 항목도 분모에 포함(과대평가 방지)
         out[key] = {"items": items, "score": score, "total": total, "label": label, "cls": cls}
     return out
