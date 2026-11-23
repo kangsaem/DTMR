@@ -1300,7 +1300,7 @@ def market_signals(snap, results):
         ("내 종목 30% 이상이 RSI 35 이하", f"{weak:.0%}" if weak is not None else "-",
          (weak >= 0.3) if weak is not None else None),
         # 2026-11-23: 'VKOSPI 꺾임 + 코스피 회복'(vk_rule 3단계, 켜짐 = 3단계). 자료 = KRX Open API(vkospi.py)
-        ("VKOSPI 꺾임 + 코스피 회복", (vk_text(vk) + _vk_stale(vk, ks)) if vk else "-", vk["on"] if vk else None),
+        ("VKOSPI 꺾임 + 코스피 회복", vk_text(vk) if vk else "-", vk["on"] if vk else None),
     ]
     out = {}
     for key, items in (("risk", risk), ("bottom", bottom)):
