@@ -344,5 +344,10 @@
   "code": "BWLP",
   "name": "BW LPG",
   "watch": true
+ },
+ {
+  "code": "001120",
+  "name": "LX인터내셔널",
+  "watch": true
  }
 ]
