@@ -390,7 +390,7 @@ def vk_dialog():
             f'<button type="button" onclick="this.closest(\'dialog\').close()">×</button></div>'
             f'<div class="vkm">최근 6개월 · VKOSPI {vk["date"]:%y.%m.%d} 기준</div>{vk_svg(vk)}'
             f'<div class="vklg">{lg}</div><div class="vkbox">{rows}</div>'
-            f'<div class="vkm" style="margin-top:6px">회복되면 {r.get("on", 20)}거래일 유지 · 꺾임 뒤 {r.get("wait", 20)}거래일 안에 회복이 없으면 처음부터 · 자료 KRX</div></dialog>')
+            '</dialog>')   # 아래 안내 문구 뺌(2026-11-23 사용자)
 
 
 VK_CSS = """
