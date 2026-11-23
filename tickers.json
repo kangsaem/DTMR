@@ -113,7 +113,8 @@
  },
  {
   "code": "MTRN",
-  "name": "마테리언"
+  "name": "마테리언",
+  "watch": true
  },
  {
   "code": "ELMT",
