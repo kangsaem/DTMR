@@ -377,9 +377,9 @@ def vk_dialog():
     def row(on, nm, col, ds, ex=""):          # 이름·점은 항상 색, 맞으면 점 채움 + 설명도 같은 색(세부 값 없음 — 대기 일수만)
         return (f'<div class="vkr{" on" if on else ""}" style="--c:{col}"><span class="vkd"></span><b>{nm}</b><span class="ds">{E(ds)}</span>'
                 + (f'<span class="ex">{E(ex)}</span>' if ex else "") + "</div>")
-    rows = (row(vk["spike"] or st >= 2, "급등", VK_C, f'최근 20일 최고 ≥ 기준(6개월 중간값×{r.get("spike", 1.5)})')
+    rows = (row(vk["spike"] or st >= 2, "급등", VK_C, f'최근 20일 최고 ≥ 급등 기준(6개월 중간값×{r.get("spike", 1.5)})')
             + row(st >= 2, "꺾임", VK_C, f'{r.get("neg", 3)}일 연속 5일 전보다 낮음 + 20일 평균 아래')
-            + row(st == 3, "회복", "var(--fg)", "코스피 20일선 위 + 20일 신저점 없음", f'대기 {vk["wait"]}/{vk["wait_max"]}일' if st == 2 else ""))
+            + row(st == 3, "회복", "var(--fg)", "코스피 20일선 위 + 20일 내 신저점 없음", f'대기 {vk["wait"]}/{vk["wait_max"]}일' if st == 2 else ""))
     L = lambda c, w, t, op="": f'<s style="border-top:{w}px {t} {c}{";opacity:" + op if op else ""}"></s>'
     B = lambda op: f'<s class="bx" style="background:{VK_SKY};opacity:{op}"></s>'
     lg = "".join(f"<span>{sw}{nm}</span>" for sw, nm in (
