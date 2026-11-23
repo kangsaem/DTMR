@@ -334,5 +334,15 @@
   "code": "SCHW",
   "name": "찰스 슈왑",
   "watch": true
+ },
+ {
+  "code": "LPG",
+  "name": "도리안 LPG",
+  "watch": true
+ },
+ {
+  "code": "BWLP",
+  "name": "BW LPG",
+  "watch": true
  }
 ]
