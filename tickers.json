@@ -354,5 +354,20 @@
   "code": "017800",
   "name": "현대엘리베이터",
   "watch": true
+ },
+ {
+  "code": "",
+  "name": "leu",
+  "watch": true
+ },
+ {
+  "code": "ECPG",
+  "name": "앙코어 캐피털 그룹",
+  "watch": true
+ },
+ {
+  "code": "COHR",
+  "name": "코히런트",
+  "watch": true
  }
 ]
