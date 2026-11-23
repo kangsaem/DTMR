@@ -1,0 +1,35 @@
+===== ① KRX 정보데이터시스템 MDCSTAT03701
+첫 페이지 200 377
+https://data.krx.co.kr 20261120 400 text/html; charset=utf-8 6
+  본문 LOGOUT
+https://data.krx.co.kr 20260730 400 text/html; charset=utf-8 6
+  본문 LOGOUT
+https://data.krx.co.kr 20200320 400 text/html; charset=utf-8 6
+  본문 LOGOUT
+https://data.krx.co.kr 20081024 400 text/html; charset=utf-8 6
+  본문 LOGOUT
+https://data.krx.co.kr 20000104 400 text/html; charset=utf-8 6
+  본문 LOGOUT
+
+http://data.krx.co.kr 20261120 200 text/html 987295
+  본문 <!DOCTYPE HTML> <html> <head> <meta http-equiv="Content-Type" content="text/html; charset=utf-8"> <title>íêµ­ê±°ëì</title> <style> *{font-family:"Malgun Gothic"; font-size:1em} html, body, div, 
+http://data.krx.co.kr 20260730 200 text/html 987295
+  본문 <!DOCTYPE HTML> <html> <head> <meta http-equiv="Content-Type" content="text/html; charset=utf-8"> <title>íêµ­ê±°ëì</title> <style> *{font-family:"Malgun Gothic"; font-size:1em} html, body, div, 
+http://data.krx.co.kr 20200320 200 text/html 987295
+  본문 <!DOCTYPE HTML> <html> <head> <meta http-equiv="Content-Type" content="text/html; charset=utf-8"> <title>íêµ­ê±°ëì</title> <style> *{font-family:"Malgun Gothic"; font-size:1em} html, body, div, 
+http://data.krx.co.kr 20081024 200 text/html 987295
+  본문 <!DOCTYPE HTML> <html> <head> <meta http-equiv="Content-Type" content="text/html; charset=utf-8"> <title>íêµ­ê±°ëì</title> <style> *{font-family:"Malgun Gothic"; font-size:1em} html, body, div, 
+http://data.krx.co.kr 20000104 200 text/html 987295
+  본문 <!DOCTYPE HTML> <html> <head> <meta http-equiv="Content-Type" content="text/html; charset=utf-8"> <title>íêµ­ê±°ëì</title> <style> *{font-family:"Malgun Gothic"; font-size:1em} html, body, div, 
+
+===== ② pykrx
+KRX 로그인 실패: KRX_ID 또는 KRX_PW 환경 변수가 설정되지 않았습니다.
+20261120 실패 JSONDecodeError Expecting value: line 1 column 1 (char 0)
+20260730 실패 JSONDecodeError Expecting value: line 1 column 1 (char 0)
+20200320 실패 JSONDecodeError Expecting value: line 1 column 1 (char 0)
+===== ③ 네이버 지수 API
+https://m.stock.naver.com/api/index/KOSPI/basic 200 3165 외국인 관련 글자 []
+https://m.stock.naver.com/api/index/KOSPI/integration 200 16315 외국인 관련 글자 ['foreign']
+   tion":"유가증권시장에 상장된 보통주를 구성종목으로하여 산출하는 지수로서 유가증권시장에서 형성되는 주가변동을 종합적으로 보여주는 국내 주요경제지표임","dealTrendInfo":{"bizdate":"20261123","personalValue":"-3,532","foreignValue":"-2,560","institutionalValue":"+1,758"},"programTrendInfo":{"bizdate":"20261123","indexDifferenceReal":"-245","indexBiDifferenceReal":"+2,050","indexTotalReal":"+1,805"},"upDownStockInfo":{"upperCount":"0","riseCount":"71","lowerCount":
+https://m.stock.naver.com/api/index/KOSPI/trend?bizdate=20261120 200 103 외국인 관련 글자 ['foreign']
+   {"bizdate":"20261120","personalValue":"+15,381","foreignValue":"-10,956","institutionalValue":"-9,330"}
