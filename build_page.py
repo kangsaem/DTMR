@@ -352,7 +352,7 @@ def vk_svg(vk):
             i += 1
     thr = vk.get("thr")
     tl = (f'<line x1="0" y1="{yv(thr)}" x2="{W}" y2="{yv(thr)}" stroke="{VK_C}" stroke-width=".8" stroke-dasharray="3 3"/>'
-          f'<text x="{W // 2}" y="{yv(thr) + (9 if yv(thr) < 24 else -3)}" font-size="8" fill="{VK_C}" text-anchor="middle">급등 기준 {thr:.1f}</text>') if thr is not None and 14 <= yv(thr) <= 84 else ""
+          f'<text x="{W - 2}" y="{yv(thr) + (9 if yv(thr) < 24 else -3)}" font-size="8" fill="{VK_C}" text-anchor="end">급등 기준 {thr:.1f}</text>') if thr is not None and 14 <= yv(thr) <= 84 else ""
     pi = max(range(n), key=lambda i: v[i] if v[i] is not None else -1)
     dot = lambda a, y, col: f'<circle cx="{x(n - 1)}" cy="{y(a)}" r="3.5" fill="{col}" stroke="var(--card)" stroke-width="1.5"/>' if a is not None else ""
     return (f'<svg width="100%" viewBox="0 0 {W} 186" aria-hidden="true">{sh}'
