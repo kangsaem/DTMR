@@ -385,12 +385,12 @@ def vk_dialog():
     lg = "".join(f"<span>{sw}{nm}</span>" for sw, nm in (
         (L(VK_C, 1.2, "solid", ".5"), "VKOSPI"), (L(VK_C, 2, "solid"), "20일 평균"), (L(VK_C, 1.2, "dashed"), "급등 기준"),
         (L("var(--fg)", 1.2, "solid", ".5"), "코스피"), (L("var(--fg)", 2, "solid"), "20일선"), (L("var(--sell)", 1.2, "dotted"), "20일 최저"),
-        (B(".5"), "켜짐"), (B(".2"), "기다림")))
+        (B(".2"), "꺾임"), (B(".5"), "회복")))
     return (f'<dialog id="vkdlg" class="vkdlg" onclick="if(event.target===this)this.close()"><div class="vkh"><b>VKOSPI 꺾임 + 코스피 회복 {vk_dots(st)}</b>'
             f'<button type="button" onclick="this.closest(\'dialog\').close()">×</button></div>'
             f'<div class="vkm">최근 6개월 · VKOSPI {vk["date"]:%y.%m.%d} 기준</div>{vk_svg(vk)}'
             f'<div class="vklg">{lg}</div><div class="vkbox">{rows}</div>'
-            f'<div class="vkm" style="margin-top:6px">켜지면 {r.get("on", 20)}거래일 유지 · 꺾임 뒤 {r.get("wait", 20)}거래일 안에 코스피 회복이 없으면 처음부터 · 자료 KRX</div></dialog>')
+            f'<div class="vkm" style="margin-top:6px">회복되면 {r.get("on", 20)}거래일 유지 · 꺾임 뒤 {r.get("wait", 20)}거래일 안에 회복이 없으면 처음부터 · 자료 KRX</div></dialog>')
 
 
 VK_CSS = """
