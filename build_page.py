@@ -414,7 +414,7 @@ def gauge(key, title):
         cls = "on" if st else "na" if st is None else "off"
         if key == "bottom" and lb.startswith("VKOSPI") and vk:      # 단계 점 + 누르면 그래프(2026-11-23)
             return (f'<li class="{cls} vkli{" wt" if vk["stage"] == 2 else ""}" onclick="document.getElementById(\'vkdlg\').showModal()" title="누르면 그래프">'
-                    f'<span class="dot"></span><span class="t">{E(lb)}{vk_dots(vk["stage"])}</span><b>{vk["last"]:.1f}</b></li>')
+                    f'<span class="dot"></span><span class="t">{E(lb)}{vk_dots(vk["stage"])}</span><b>{vk["last"]:.1f}{E(m._vk_stale(vk, snap.get("ks")))}</b></li>')   # 기준일(전날 값이면, 2026-11-23)
         return (f'<li class="{cls}"><span class="dot"></span>'
                 f'<span class="t">{E(lb)}</span><b>{E(val)}</b></li>')
     rows = "".join(row(*it) for it in g["items"])
