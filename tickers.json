@@ -369,5 +369,10 @@
   "code": "COHR",
   "name": "코히런트",
   "watch": true
+ },
+ {
+  "code": "DOW",
+  "name": "다우",
+  "watch": true
  }
 ]
