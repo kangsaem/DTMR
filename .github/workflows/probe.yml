@@ -25,6 +25,7 @@ jobs:
       - name: 확인
         env:
           SCRIPT: ${{ inputs.script }}
+          KRX_API_KEY: ${{ secrets.KRX_API_KEY }}
         run: |
           case "$SCRIPT" in *_probe.py) ;; *) echo "확인 스크립트(*_probe.py)만 실행"; exit 1;; esac
           python "$SCRIPT" > "/tmp/${SCRIPT%.py}.txt" 2>&1 || true
