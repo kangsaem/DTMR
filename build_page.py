@@ -879,7 +879,7 @@ def _market_json():
             return None
         return {k: (f"{x:%Y-%m-%d}" if hasattr(x, "strftime") else x) for k, x in v.items() if k != "spark"}
     with open("docs/market.json", "w", encoding="utf-8") as f:
-        json.dump({"time": stamp, "credit": ser(snap.get("credit")), "credit_ks": ser(snap.get("credit_ks")),
+        json.dump({"time": stamp, "credit": ser(snap.get("credit")), "credit_ks": ser(snap.get("credit_ks")), "vkospi": ser(snap.get("vk")),
                    "credit_top": m.CREDIT_TOP, "pbr_link": m.PBR_LINK}, f, ensure_ascii=False)
 guard("시장 자료 내보내기", _market_json)
 # 신호 기록: 오늘 칸을 history/에 저장(daily.yml이 커밋) + 지난 기록으로 docs/history.html

@@ -1130,6 +1130,13 @@ def market_snapshot():
                          "pct10": float((h.iloc[-1] / h.iloc[-11] - 1) * 100) if n >= 11 else None}
         except Exception as e:
             snap["err"].append(f"{nm} ({type(e).__name__})")
+    snap["vk"] = None
+    try:
+        snap["vk"] = vkospi_info()
+        if snap["vk"] is None:
+            snap["err"].append("VKOSPI (자료 없음)")
+    except Exception as e:
+        snap["err"].append(f"VKOSPI ({type(e).__name__}: {str(e)[:120]})")
     snap["credit"] = snap["credit_ks"] = None
     try:
         cred, dep = credit_tables()
@@ -1143,6 +1150,36 @@ def market_snapshot():
     return snap
 
 
+VK_TH = 30.0          # VKOSPI 바닥 항목(2026-11-23, B안): 이 값 이하 + 최근 VK_WIN거래일 안에 이 값을 넘은 적 있음
+VK_WIN = 60           #   = 변동성 진정·외국인 수급 복귀 확인(하락이 끝날 때 마지막에 켜지는 쪽)
+VK_HIST_FROM = "2025-01-01"
+
+
+def vkospi_on(s):
+    """날짜별 켜짐(0/1) Series: 그날 ≤ VK_TH 이고 그날까지 최근 VK_WIN거래일(그날 포함) 중 > VK_TH 인 날이 있음"""
+    hi = (s > VK_TH).astype(int).rolling(VK_WIN, min_periods=1).max()
+    return ((s <= VK_TH) & (hi > 0)).astype(int)
+
+
+def vkospi_info():
+    """KRX VKOSPI(data/vkospi.csv, 오늘 실행에서 모자란 날을 먼저 받음). 없으면 None"""
+    import vkospi
+    try:
+        vkospi.update(limit_min=5, log=lambda *a: None)      # 보통 1~2일치. 키가 없거나 실패해도 쌓인 파일로 계속
+    except Exception as e:
+        print("VKOSPI 받기 실패:", type(e).__name__, str(e)[:200])
+    s = vkospi.series()
+    if s.empty:
+        return None
+    on = vkospi_on(s)
+    w = s.tail(VK_WIN)
+    h = s[s.index >= VK_HIST_FROM]
+    return {"last": float(s.iloc[-1]), "chg": float(s.iloc[-1] - s.iloc[-2]) if len(s) > 1 else None, "date": s.index[-1],
+            "max60": float(w.max()), "over60": int((w > VK_TH).sum()), "on": bool(on.iloc[-1]), "th": VK_TH, "win": VK_WIN,
+            "hist": {"d": [f"{d:%Y-%m-%d}" for d in h.index], "v": [round(float(x), 2) for x in h.values],
+                     "on": "".join(str(int(x)) for x in on[h.index].values)}}
+
+
 def _level(score, total, kind):
     ratio = score / total if total else 0
     hi, mid = ratio >= 0.6, ratio >= 0.3      # 5개면 3개 이상 / 2개, 6개면 4개 이상 / 2개
@@ -1154,6 +1191,7 @@ def _level(score, total, kind):
 def market_signals(snap, results):
     """시장 위험 / 시장 바닥 체크리스트. 항목 = (설명, 현재값, True|False|None(데이터없음))"""
     ks, vix, y10, cr = snap.get("ks"), snap.get("vix"), snap.get("y10"), snap.get("credit")
+    vk = snap.get("vk")
     n = len(results)
     bear = sum(1 for r in results if r["day"]["ok"] and not r["day"]["above"]) / n if n else None
     weak = sum(1 for r in results if r["rsi"] <= 35) / n if n else None
@@ -1183,6 +1221,10 @@ def market_signals(snap, results):
         ("VIX 30 이상", f"{vix['last']:.1f}" if vix else "-", vix["last"] >= 30 if vix else None),
         ("내 종목 30% 이상이 RSI 35 이하", f"{weak:.0%}" if weak is not None else "-",
          (weak >= 0.3) if weak is not None else None),
+        # 2026-11-23(B안): 변동성 진정 확인 — 하락이 끝날 때 마지막에 켜지는 항목. KRX Open API(vkospi.py)
+        (f"VKOSPI {VK_TH:.0f} 이하\n(최근 {VK_WIN}거래일 안에 {VK_TH:.0f} 넘은 뒤)",
+         (f"{vk['last']:.1f}" + (f" · 최고 {vk['max60']:.0f}" if vk["max60"] > VK_TH else "")) if vk else "-",
+         vk["on"] if vk else None),
     ]
     out = {}
     for key, items in (("risk", risk), ("bottom", bottom)):
@@ -1208,6 +1250,10 @@ def market_text(snap):
         v = snap.get(key)
         if v:
             L.append(f"{nm} {v['last']:.2f}{unit} (전일 대비 {v['chg']:+.2f}, {v['date']:%m-%d})")
+    vk = snap.get("vk")
+    if vk:
+        L.append(f"VKOSPI {vk['last']:.2f}" + (f" (전일 대비 {vk['chg']:+.2f}" if vk["chg"] is not None else " (") + f", {vk['date']:%m-%d})"
+                 f" · 최근 {vk['win']}거래일 최고 {vk['max60']:.1f}")
     cr = snap.get("credit")
     if cr:
         L.append(f"신용잔고/고객예탁금 {cr['ratio']:.1f}% (신용 {cr['cred'] / 1e4:,.1f}조 / 예탁금 {cr['dep'] / 1e4:,.1f}조, {cr['date']:%m-%d})"
