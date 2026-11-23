@@ -314,11 +314,110 @@ def index_chart(key):
             + svg_chart(v["chart"]) + "</div>")
 
 
+# VKOSPI 바닥 항목(2026-11-23): 게이지 줄의 단계 점 + 누르면 6개월 그래프 팝업(위 VKOSPI · 아래 코스피 회복 기준)
+def vk_svg(vk):
+    c = (vk or {}).get("chart") or {}
+    d, v, ma, k, kma, klo, st = c.get("d") or [], c.get("v") or [], c.get("ma") or [], c.get("k") or [], c.get("kma") or [], c.get("klo") or [], c.get("st") or ""
+    n = len(d)
+    if n < 2:
+        return ""
+    W, x = 330, (lambda i: round(i * 330 / (n - 1), 1))
+    def band(vals, y0, y1, extra=()):
+        xs = [a for a in list(vals) + list(extra) if a is not None]
+        lo, hi = min(xs), max(xs)
+        pad = (hi - lo) * 0.08 or 1
+        lo, hi = lo - pad, hi + pad
+        return lambda a: round(y1 - (a - lo) / (hi - lo) * (y1 - y0), 1)
+    yv = band(v + ma, 14, 84, [vk.get("thr")] if vk.get("thr") is not None and vk["thr"] < max(a for a in v if a is not None) * 1.6 else [])
+    yk = band(k + kma + klo, 104, 168)
+    def line(vals, y, color, w=1.5, dash=""):
+        pts = " ".join(f"{x(i)},{y(a)}" for i, a in enumerate(vals) if a is not None)
+        return f'<polyline fill="none" stroke="{color}" stroke-width="{w}"{f" stroke-dasharray={chr(34)}{dash}{chr(34)}" if dash else ""} points="{pts}"/>'
+    sh = ""
+    i = 0
+    while i < n:                                   # 꺾임 뒤 대기(2)·켜짐(3) 구간 칠함
+        if st[i:i + 1] in ("2", "3"):
+            j = i
+            while j + 1 < n and st[j + 1] in ("2", "3"):
+                j += 1
+            col = "var(--ok)"
+            sh += f'<rect x="{x(i)}" y="0" width="{max(x(j) - x(i), 2)}" height="176" fill="{col}" opacity="{.16 if st[j] == "3" else .08}"/>'
+            i = j + 1
+        else:
+            i += 1
+    thr = vk.get("thr")
+    tl = (f'<line x1="0" y1="{yv(thr)}" x2="{W}" y2="{yv(thr)}" stroke="#C080F0" stroke-width=".8" stroke-dasharray="3 3"/>'
+          f'<text x="{W // 2}" y="{yv(thr) + (9 if yv(thr) < 24 else -3)}" font-size="8" fill="#C080F0" text-anchor="middle">급등 기준 {thr:.1f}</text>') if thr is not None and 14 <= yv(thr) <= 84 else ""
+    pi = max(range(n), key=lambda i: v[i] if v[i] is not None else -1)
+    last_col = "var(--sell)" if (vk.get("d5") or 0) < 0 else "var(--buy)"
+    return (f'<svg width="100%" viewBox="0 0 {W} 186" aria-hidden="true">{sh}'
+            f'<line x1="0" y1="94" x2="{W}" y2="94" stroke="var(--line)" stroke-width=".8"/>'
+            f'<text x="2" y="9" font-size="8.5" fill="#C080F0">VKOSPI {vk["last"]:.1f}</text>{tl}'
+            + line(ma, yv, "var(--mut)", 1, "2 2") + line(v, yv, "#C080F0", 1.6)
+            + f'<circle cx="{x(pi)}" cy="{yv(v[pi])}" r="2.5" fill="#C080F0"/><text x="{x(pi) + 5 if x(pi) < W - 90 else x(pi) - 5}" y="{yv(v[pi]) + 3}" font-size="8" fill="#C080F0"{"" if x(pi) < W - 90 else " text-anchor=" + chr(34) + "end" + chr(34)}>최고 {v[pi]:.1f} ({d[pi][5:].replace("-", ".")})</text>'
+            + f'<circle cx="{x(n - 1)}" cy="{yv(v[-1])}" r="2.5" fill="{last_col}"/>'
+            + f'<text x="2" y="104" font-size="8.5" fill="var(--fg)">코스피 {k[-1]:,.0f}</text>'
+            + line(kma, yk, "var(--warn)", 1, "3 2") + line(klo, yk, "var(--sell)", 1, "1.5 2.5") + line(k, yk, "var(--fg)", 1.6)
+            + f'<text x="0" y="184" font-size="8" fill="var(--mut)">{d[0][2:].replace("-", ".")}</text>'
+            + f'<text x="{W}" y="184" font-size="8" fill="var(--mut)" text-anchor="end">{d[-1][2:].replace("-", ".")}</text></svg>')
+
+
+def vk_dots(stage):
+    return '<span class="vkst">' + "".join(f'<i class="{"f" if k < stage else ""}"></i>' for k in range(3)) + "</span>"
+
+
+def vk_dialog():
+    vk = snap.get("vk")
+    if not vk:
+        return ""
+    ok = lambda b: '<span class="vko">○</span>' if b else '<span class="vkx">✕</span>'
+    st, r = vk["stage"], vk.get("rule") or {}
+    dot = lambda on: f'<span class="vkd{" f" if on else ""}"></span>'
+    pk = f'60일 최고 {vk["peak"]:.1f}({vk["peak_d"][5:].replace("-", ".")})'
+    s1 = f'급등: {pk} · 기준 {vk["thr"]:.1f}(6개월 중간값×{r.get("spike", 1.5)}) ' + ("넘음" if vk["spike"] or st >= 2 else "못 넘음")
+    s2 = f'꺾임: 5일 전보다 낮음 {r.get("neg", 3)}일 연속 + 20일 평균({vk["ma"]:.1f}) 아래 ' + ("맞음" if st >= 2 else "아직")
+    s3 = (f'코스피 회복: 켜짐' if st == 3 else
+          f'코스피 회복 대기 {vk["wait"]}/{vk["wait_max"]}일' if st == 2 else '코스피 회복: 꺾임 뒤에 봄')
+    s3d = (f'20일선 위 {ok(vk["ma_ok"])} ({vk["k"]:,.0f} / {vk["kma"]:,.0f}) · 20거래일 신저점 없음 {ok(vk["nolow"])}'
+           f' (20일 최저 {vk["klo"]:,.0f}, {vk["klo_d"][5:].replace("-", ".")})')
+    lg = ('<span><s style="border-color:#C080F0"></s>VKOSPI</span><span><s class="ds" style="border-color:var(--mut)"></s>20일 평균</span>'
+          '<span><s class="ds" style="border-color:#C080F0"></s>급등 기준</span><span><s style="border-color:var(--fg)"></s>코스피</span>'
+          '<span><s class="ds" style="border-color:var(--warn)"></s>20일선</span><span><s class="dt" style="border-color:var(--sell)"></s>20일 최저</span>')
+    return (f'<dialog id="vkdlg" class="vkdlg" onclick="if(event.target===this)this.close()"><div class="vkh"><b>VKOSPI 꺾임 + 코스피 회복 {vk_dots(st)}</b>'
+            f'<button type="button" onclick="this.closest(\'dialog\').close()">×</button></div>'
+            f'<div class="vkm">최근 6개월 · VKOSPI {vk["date"]:%y.%m.%d} 기준 · 꺾임 뒤 기다림·켜짐 구간 = 연한 칸</div>{vk_svg(vk)}'
+            f'<div class="vklg">{lg}</div><div class="vkbox"><div>{dot(st >= 1 or vk["spike"])} {s1}</div><div>{dot(st >= 2)} {s2}</div>'
+            f'<div>{dot(st >= 3)} {s3}<div class="vkm" style="padding-left:14px">{s3d}</div></div></div>'
+            f'<div class="vkm" style="margin-top:6px">켜지면 {r.get("on", 20)}거래일 유지 · 꺾임 뒤 {r.get("wait", 20)}거래일 안에 코스피 회복이 없으면 처음부터 · 자료 KRX</div></dialog>')
+
+
+VK_CSS = """
+.vkst{display:inline-flex;gap:3px;margin-left:6px;padding:2px 4px;border:1px solid var(--line);border-radius:6px;vertical-align:middle}
+.vkst i{width:6px;height:6px;border-radius:50%;border:1px solid var(--mut);box-sizing:border-box}.vkst i.f{background:var(--ok);border-color:var(--ok)}
+.gauge li.vkli{cursor:pointer} .gauge li.vkli.wt .dot{background:transparent;border:1.5px solid var(--ok);box-sizing:border-box}
+.vkdlg{border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--fg);width:min(400px,94vw);padding:12px 14px;font-size:.8rem}
+.vkdlg::backdrop{background:rgba(0,0,0,.45)}
+.vkh{display:flex;align-items:center;margin-bottom:4px}.vkh b{flex:1;font-size:.88rem}.vkh button{border:0;background:none;color:var(--mut);font-size:1.2rem;cursor:pointer}
+.vkm{color:var(--mut);font-size:.72rem}
+.vklg{display:flex;flex-wrap:wrap;gap:3px 10px;font-size:.68rem;color:var(--mut);margin:2px 0 8px}.vklg s{display:inline-block;width:12px;border-top:1.6px solid;vertical-align:middle;margin-right:3px}
+.vklg s.ds{border-top-style:dashed;border-top-width:1px}.vklg s.dt{border-top-style:dotted;border-top-width:1.4px}
+.vkbox{background:var(--bg);border-radius:8px;padding:7px 9px;line-height:1.7}
+.vkd{display:inline-block;width:7px;height:7px;border-radius:50%;border:1px solid var(--mut);vertical-align:middle}.vkd.f{background:var(--ok);border-color:var(--ok)}
+.vko{color:var(--buy)}.vkx{color:var(--sell)}
+"""
+
+
 def gauge(key, title):
     g = msig[key]
-    rows = "".join(
-        f'<li class="{"on" if st else "na" if st is None else "off"}"><span class="dot"></span>'
-        f'<span class="t">{E(lb)}</span><b>{E(val)}</b></li>' for lb, val, st in g["items"])
+    vk = snap.get("vk")
+    def row(lb, val, st):
+        cls = "on" if st else "na" if st is None else "off"
+        if key == "bottom" and lb.startswith("VKOSPI") and vk:      # 단계 점 + 누르면 그래프(2026-11-23)
+            return (f'<li class="{cls} vkli{" wt" if vk["stage"] == 2 else ""}" onclick="document.getElementById(\'vkdlg\').showModal()" title="누르면 그래프">'
+                    f'<span class="dot"></span><span class="t">{E(lb)}{vk_dots(vk["stage"])}</span><b>{vk["last"]:.1f}</b></li>')
+        return (f'<li class="{cls}"><span class="dot"></span>'
+                f'<span class="t">{E(lb)}</span><b>{E(val)}</b></li>')
+    rows = "".join(row(*it) for it in g["items"])
     pct = int(100 * g["score"] / g["total"]) if g["total"] else 0
     extra = ""
     if key == "bottom" and g["cls"] != "lv0":     # 바닥 신호가 켜졌을 때만: 밸류에이션은 직접 확인(자동 수집 불가)
@@ -839,14 +938,14 @@ pre.warn {{ background:var(--warnbg); border-radius:10px; padding:10px 12px; }}
 .svgbox {{ position:relative; }} .lastlbl {{ position:absolute; transform:translateY(-50%); font-size:var(--bignum); font-weight:700; line-height:1; white-space:nowrap; color:var(--fg); text-shadow:0 0 3px var(--card),0 0 3px var(--card),0 0 2px var(--card); pointer-events:none; }}
 .mc.up .mg, .mc.up b {{ color:var(--buy); }} .mc.dn .mg, .mc.dn b {{ color:var(--sell); }} .mc.bad {{ background:var(--warnbg); }}
 .idxch {{ display:grid; gap:8px; }}
-</style></head><body>
+{VK_CSS}</style></head><body>
 <h1>{TITLE}</h1>
 <div class="t">갱신 {stamp} · 규칙 기반 참고 신호이며 투자 판단 책임은 본인에게 있습니다</div>
 
 <div class="mcards">{"".join(cards)}</div>
 <div class="idxch">{"".join(index_chart(k) for k in CHART_IDX)}</div>
 
-<div class="gauges sec">{gauge("risk", "시장 위험 지표")}{gauge("bottom", "시장 바닥 지표")}</div>
+<div class="gauges sec">{gauge("risk", "시장 위험 지표")}{gauge("bottom", "시장 바닥 지표")}</div>{vk_dialog()}
 
 <div class="sgrid sec">{sig_html or '<div class="none">오늘 해당하는 시그널이 없습니다</div>'}</div>
 {logic_html()}

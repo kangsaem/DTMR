@@ -1174,20 +1174,24 @@ def vk_rule(vk, kc):
     neg = (vk.diff(5) < 0).astype(int).rolling(VK_NEG).min().fillna(0).astype(bool)
     turn = (spike & neg & (vk < ma)).fillna(False)
     edge = turn & ~turn.shift(1, fill_value=False)
-    kma = kc.rolling(20).mean().reindex(vk.index)
-    nolow = (kc.rolling(20).apply(lambda x: np.argmin(x) == 0, raw=True) == 1).reindex(vk.index).fillna(False)
+    kma = k.rolling(20).mean()                 # 20일 계산은 VKOSPI와 같은 날짜끼리(백테스트와 같게)
+    nolow = (k.rolling(20).apply(lambda x: np.argmin(x) == 0, raw=True) == 1).fillna(False)
     ma_ok = (k >= kma).fillna(False)
     stage, on, wait, tds = [], [], [], []
-    w0 = None; on_left = 0; td = None
+    w0 = None; on_left = 0; td = wd = None
     for i, d in enumerate(vk.index):
-        if on_left > 0:
-            on_left -= 1
-            stage.append(3); on.append(True); wait.append(0); tds.append(td)
-            continue
         if edge.iloc[i]:
-            w0, td = i, d                       # 꺾임 시작 → 기다림 시작(새 꺾임이면 다시 셈)
+            w0, wd = i, d                       # 꺾임 시작 → 기다림 시작(켜져 있는 동안 생긴 꺾임도 기억 — 백테스트와 같게)
         if w0 is not None and i - w0 >= VK_WAIT + 1:
             w0 = None                           # 21거래일째 = 기다림 끝(회복 없음)
+        if on_left > 0:
+            on_left -= 1
+            if w0 is not None and nolow.iloc[i] and ma_ok.iloc[i]:
+                w0 = None                       # 켜져 있는 동안 회복이 맞은 꺾임은 새 신호로 세지 않음(백테스트 쿨다운과 같게)
+            stage.append(3); on.append(True); wait.append(0); tds.append(td)
+            continue
+        if w0 is not None:
+            td = wd
         if w0 is not None and nolow.iloc[i] and ma_ok.iloc[i]:
             w0 = None; on_left = VK_ON - 1
             stage.append(3); on.append(True); wait.append(0); tds.append(td); continue
@@ -1196,7 +1200,7 @@ def vk_rule(vk, kc):
         else:
             stage.append(1 if spike.iloc[i] else 0); on.append(False); wait.append(0); tds.append(None)
     return pd.DataFrame({"vk": vk, "ma": ma, "thr": thr, "mx60": mx60, "d5": vk.diff(5), "spike": spike, "neg": neg,
-                         "k": k, "kma": kma, "klo": kc.rolling(20).min().reindex(vk.index), "nolow": nolow, "ma_ok": ma_ok,
+                         "k": k, "kma": kma, "klo": k.rolling(20).min(), "nolow": nolow, "ma_ok": ma_ok,
                          "stage": stage, "on": on, "wait": wait, "turn_d": tds}, index=vk.index)
 
 
