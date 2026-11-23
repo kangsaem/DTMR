@@ -349,5 +349,10 @@
   "code": "001120",
   "name": "LX인터내셔널",
   "watch": true
+ },
+ {
+  "code": "017800",
+  "name": "현대엘리베이터",
+  "watch": true
  }
 ]
