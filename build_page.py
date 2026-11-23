@@ -352,11 +352,11 @@ def vk_svg(vk):
     last_col = "var(--sell)" if (vk.get("d5") or 0) < 0 else "var(--buy)"
     return (f'<svg width="100%" viewBox="0 0 {W} 186" aria-hidden="true">{sh}'
             f'<line x1="0" y1="94" x2="{W}" y2="94" stroke="var(--line)" stroke-width=".8"/>'
-            f'<text x="2" y="9" font-size="8.5" fill="#C080F0">VKOSPI {vk["last"]:.1f}</text>{tl}'
+            f'<text x="{W - 2}" y="9" font-size="8.5" fill="#C080F0" text-anchor="end">VKOSPI {vk["last"]:.1f}</text>{tl}'
             + line(ma, yv, "var(--mut)", 1, "2 2") + line(v, yv, "#C080F0", 1.6)
             + f'<circle cx="{x(pi)}" cy="{yv(v[pi])}" r="2.5" fill="#C080F0"/><text x="{x(pi) + 5 if x(pi) < W - 90 else x(pi) - 5}" y="{yv(v[pi]) + 3}" font-size="8" fill="#C080F0"{"" if x(pi) < W - 90 else " text-anchor=" + chr(34) + "end" + chr(34)}>최고 {v[pi]:.1f} ({d[pi][5:].replace("-", ".")})</text>'
             + f'<circle cx="{x(n - 1)}" cy="{yv(v[-1])}" r="2.5" fill="{last_col}"/>'
-            + f'<text x="2" y="104" font-size="8.5" fill="var(--fg)">코스피 {k[-1]:,.0f}</text>'
+            + f'<text x="{W - 2}" y="104" font-size="8.5" fill="var(--fg)" text-anchor="end">코스피 {k[-1]:,.0f}</text>'
             + line(kma, yk, "var(--warn)", 1, "3 2") + line(klo, yk, "var(--sell)", 1, "1.5 2.5") + line(k, yk, "var(--fg)", 1.6)
             + f'<text x="0" y="184" font-size="8" fill="var(--mut)">{d[0][2:].replace("-", ".")}</text>'
             + f'<text x="{W}" y="184" font-size="8" fill="var(--mut)" text-anchor="end">{d[-1][2:].replace("-", ".")}</text></svg>')
