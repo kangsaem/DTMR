@@ -1,0 +1,8 @@
+[https://kangsaem.github.io] 403 https://api.finance.naver.com/siseJson.naver?symbol=KOSPI&requestType=1&startTime=20261117&endTime=20261125&ti
+    forbidden origin 
+[https://kangsaem.github.io] 403 https://api.stock.naver.com/chart/foreign/index/.IXIC?periodType=dayCandle&startDateTime=202611170000&endDateT
+    forbidden origin 
+[https://kangsaem.github.io] 403 https://api.stock.naver.com/chart/foreign/index/.INX?periodType=dayCandle&startDateTime=202605010000&endDateTi
+    forbidden origin 
+[https://kangsaem.github.io] 403 https://api.stock.naver.com/chart/domestic/index/KOSPI?periodType=dayCandle&startDateTime=202001010000&endDate
+    forbidden origin 
