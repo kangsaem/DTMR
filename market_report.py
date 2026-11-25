@@ -1220,6 +1220,14 @@ def vkospi_info(kc=None):
     t = r.iloc[-1]
     h = r[r.index >= VK_HIST_FROM]
     c = r.tail(VK_CHART)
+    try:   # 그래프 날짜 = 코스피 기준(2026-11-25): KRX VKOSPI는 다음 날 아침에 올라와 하루 늦음 → 코스피 선은 마지막 거래일까지, VKOSPI 선만 하루 짧게. 판정(r)은 그대로
+        kk = kc.dropna()
+        cd = kk.index[kk.index >= c.index[0]]
+        c = r.reindex(cd)
+        c["k"], c["kma"], c["klo"] = kk.reindex(cd), kk.rolling(20).mean().reindex(cd), kk.rolling(20).min().reindex(cd)
+        c["stage"] = c["stage"].fillna(0).astype(int)
+    except Exception as e:
+        print("VKOSPI 그래프 코스피 날짜 맞추기 실패:", e)
     pk = r["vk"].tail(60)
     f = lambda x, n=2: None if pd.isna(x) else round(float(x), n)
     lo_i = r["k"].tail(20).idxmin()

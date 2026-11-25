@@ -325,7 +325,8 @@ def vk_svg(vk):
     n = len(d)
     if n < 2:
         return ""
-    W, x = 330, (lambda i: round(i * 330 / (n - 1), 1))
+    W = 330
+    x = lambda i: round(i * (W - 6) / (n - 1), 1)      # 오른쪽 6px 남김 — 오늘 점이 잘리지 않게(2026-11-25)
     def band(vals, y0, y1, extra=()):
         xs = [a for a in list(vals) + list(extra) if a is not None]
         lo, hi = min(xs), max(xs)
@@ -354,13 +355,15 @@ def vk_svg(vk):
     tl = (f'<line x1="0" y1="{yv(thr)}" x2="{W}" y2="{yv(thr)}" stroke="{VK_C}" stroke-width=".8" stroke-dasharray="3 3"/>'
           f'<text x="{W - 2}" y="{yv(thr) + (9 if yv(thr) < 24 else -3)}" font-size="8" fill="{VK_C}" text-anchor="end">급등 기준 {thr:.1f}</text>') if thr is not None and 14 <= yv(thr) <= 84 else ""
     pi = max(range(n), key=lambda i: v[i] if v[i] is not None else -1)
-    dot = lambda a, y, col: f'<circle cx="{x(n - 1)}" cy="{y(a)}" r="3.5" fill="{col}" stroke="var(--card)" stroke-width="1.5"/>' if a is not None else ""
+    def dot(vals, y, col):                         # 마지막 값 있는 날에 점(VKOSPI는 코스피보다 하루 짧을 수 있음)
+        i = max((j for j, a in enumerate(vals) if a is not None), default=None)
+        return f'<circle cx="{x(i)}" cy="{y(vals[i])}" r="3.5" fill="{col}" stroke="var(--card)" stroke-width="1.5"/>' if i is not None else ""
     return (f'<svg width="100%" viewBox="0 0 {W} 186" aria-hidden="true">{sh}'
             f'<line x1="0" y1="94" x2="{W}" y2="94" stroke="var(--line)" stroke-width=".8"/>{tl}'
             + line(v, yv, VK_C, .9, "", .45) + line(ma, yv, VK_C, 2)
             + f'<circle cx="{x(pi)}" cy="{yv(v[pi])}" r="2.5" fill="{VK_C}"/><text x="{x(pi) + 5 if x(pi) < W - 90 else x(pi) - 5}" y="{yv(v[pi]) + 3}" font-size="8" fill="{VK_C}"{"" if x(pi) < W - 90 else " text-anchor=" + chr(34) + "end" + chr(34)}>최고 {v[pi]:.1f} ({d[pi][5:].replace("-", ".")})</text>'
             + line(k, yk, "var(--fg)", .9, "", .45) + line(kma, yk, "var(--fg)", 2) + line(klo, yk, "var(--sell)", 1, "1.5 2.5")
-            + dot(v[-1], yv, VK_C) + dot(k[-1], yk, "var(--fg)")
+            + dot(v, yv, VK_C) + dot(k, yk, "var(--fg)")
             + f'<text x="0" y="184" font-size="8" fill="var(--mut)">{d[0][2:].replace("-", ".")}</text>'
             + f'<text x="{W}" y="184" font-size="8" fill="var(--mut)" text-anchor="end">{d[-1][2:].replace("-", ".")}</text></svg>')
 
