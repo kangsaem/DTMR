@@ -119,5 +119,31 @@ for since in ("2000-01-01", "2010-01-01"):
     print(f"\n######## {since[:4]}~")
     report("지금 6개", NOWSET, since)
     report("A안 6개", A6, since)
-for th in (2, 3, 4):
-    detail("A안 6개", A6, "2000-01-01", th)
+# 큰 하락마다: 고점 전 60일·고점 뒤 20일 동안 최고 점수(2026-11-25 '위험할 때 다 켜졌나')
+tops = []
+for i in range(250, n - 5):
+    if I[i] < pd.Timestamp("2000-06-01"): continue
+    w = ks.iloc[max(0, i - 120):i + 121]
+    fut = ks.iloc[i + 1:i + 127]
+    if ks.iloc[i] == w.max() and len(fut) and fut.min() / ks.iloc[i] - 1 <= -0.15:
+        tops.append(i)
+def sc_of(items): return sum(v.fillna(False).astype(int) for v in items.values())
+S_now, S_a = sc_of(NOWSET), sc_of(A6)
+def mx(S, items, a, b):
+    seg = S.iloc[max(0, a):b + 1]
+    if seg.max() <= 0: return "0"
+    d = seg.idxmax(); on = [k for k, v in items.items() if bool(v.fillna(False).get(d, False))]
+    return f"{int(seg.max())}({d:%y.%m}: {'·'.join(x.split(' ')[0] + (' ' + x.split(' ')[1] if len(x.split(' ')) > 1 else '') for x in on)})"
+print("\n######## 큰 하락(앞뒤 120일 최고 + 6개월 안 -15%↓) — 고점 전 60일 / 고점 뒤 20일 동안 최고 점수(그날 켜진 항목)")
+print("  외국인 자료 2005~, 내 종목 2014~ (그 전엔 그 항목이 켜질 수 없음)")
+cnt = {"now": [0, 0, 0], "a": [0, 0, 0]}
+for i in tops:
+    fut = ks.iloc[i + 1:i + 127]
+    pa, pb = mx(S_now, NOWSET, i - 60, i), mx(S_a, A6, i - 60, i)
+    qa, qb = mx(S_now, NOWSET, i + 1, i + 20), mx(S_a, A6, i + 1, i + 20)
+    print(f"  {I[i]:%Y-%m-%d} {ks.iloc[i]:>7,.0f} → {(fut.min() / ks.iloc[i] - 1) * 100:+4.0f}% | 지금 6개: 전 {pa} / 뒤 {qa} | A안: 전 {pb} / 뒤 {qb}")
+    for key, S in (("now", S_now), ("a", S_a)):
+        m_ = S.iloc[max(0, i - 60):i + 21].max()
+        for j, th in enumerate((1, 2, 3)):
+            cnt[key][j] += int(m_ >= th)
+print(f"\n  큰 하락 {len(tops)}번 중 고점 전 60일~뒤 20일 안에 1·2·3개 이상 켜진 횟수 — 지금 6개 {cnt['now']} · A안 {cnt['a']}")
