@@ -1,0 +1,11 @@
+/home/runner/work/moneypier/moneypier/kosdata_probe.py:9: DeprecationWarning: datetime.datetime.utcfromtimestamp() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.fromtimestamp(timestamp, datetime.UTC).
+  print("야후 ^KS11", [(dt.datetime.utcfromtimestamp(t + off).strftime("%m-%d %H:%M"), None if c is None else round(c, 2)) for t, c in zip(j["timestamp"], cl)])
+/home/runner/work/moneypier/moneypier/kosdata_probe.py:10: DeprecationWarning: datetime.datetime.utcfromtimestamp() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.fromtimestamp(timestamp, datetime.UTC).
+  print("  meta regularMarketTime", dt.datetime.utcfromtimestamp(j["meta"]["regularMarketTime"] + off), j["meta"].get("regularMarketPrice"))
+/home/runner/work/moneypier/moneypier/kosdata_probe.py:20: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  print("KRX VKOSPI", d, "행", len(rows), v, "확인 시각(UTC)", dt.datetime.utcnow().strftime("%H:%M"))
+야후 ^KS11 [('11-12 09:00', 5342.73), ('11-13 09:00', 5290.53), ('11-16 09:00', 5100.5), ('11-17 09:00', 4968.48), ('11-18 09:00', 5067.44), ('11-19 09:00', 5137.89), ('11-20 09:00', 4869.96), ('11-23 09:00', 4708.54), ('11-24 09:00', None), ('11-25 09:00', None)]
+  meta regularMarketTime 2026-11-24 20:05:40 5006.03
+FDR KS11 {Timestamp('2026-11-17 00:00:00'): 4968.48, Timestamp('2026-11-18 00:00:00'): 5067.44, Timestamp('2026-11-19 00:00:00'): 5137.89, Timestamp('2026-11-20 00:00:00'): 4869.96, Timestamp('2026-11-23 00:00:00'): 4708.54, Timestamp('2026-11-24 00:00:00'): 5006.03}
+KRX VKOSPI 20261124 행 323 ['58.45', '3219.27', '9988.90', '10770.84', '986.91', '787.82'] 확인 시각(UTC) 00:06
+KRX VKOSPI 20261125 행 0 [] 확인 시각(UTC) 00:06
