@@ -1147,7 +1147,7 @@ def market_snapshot():
             n = len(h)
             snap[key] = {"last": float(h.iloc[-1]), "chg": float(h.iloc[-1] - h.iloc[-2]), "date": h.index[-1],
                          "chg10": float(h.iloc[-1] - h.iloc[-11]) if n >= 11 else None,
-                         "chg20": float(h.iloc[-1] - h.iloc[-21]) if n >= 21 else None,     # 위험 '금리 20일 +0.5%p'(2026-11-25)
+                         "chg20": float(h.iloc[-1] - h.iloc[-21]) if n >= 21 else None,     # 참고용(위험 금리 항목은 chg10, 2026-11-25)
                          "pct10": float((h.iloc[-1] / h.iloc[-11] - 1) * 100) if n >= 11 else None}
         except Exception as e:
             snap["err"].append(f"{nm} ({type(e).__name__})")
@@ -1339,14 +1339,15 @@ def market_signals(snap, results):
 
     # 2026-11-25 위험 지표 다시 짬(riskaudit·rate·foreignrisk·credit2·gaugecombo_probe, 2000~ 코스피 60일 안 -10% 하락 확률 기준):
     # 뺌 = RSI 70↑(×0.5, 오히려 상승) · 신용/예탁금 상위 10%(25년치로 ×1.0~1.2) · 금리 10일 +0.3%p(→ 20일 +0.5%p)
+    # (같은 날 오후) 금리 항목 20일 +0.5%p → 다시 10일 +0.3%p: riskmix3(6개월) 큰 고점 5/7(무작위 2.5)·켜진 뒤 6개월 안 -15% 47%(평소 21%)
     # 넣음 = 금리 20일 +0.5%p(2010~ ×2.1) · 미국 10년물 5%↑(2000~ ×2.7, 2000~01·2006~07) · 고점 -3% 안 외국인 20일 순매도(×1.6)
     # 순서 = 머니파이 판정 기록 비트(0~3 시장 계산 · 4 내 종목 역배열 · 5 외국인)와 같게
     risk = [
         ("코스피 50일 이격도 120 이상", f"{ks['disp']:.1f}" if ks else "-", ks["disp"] >= 120 if ks else None),
         ("코스피 200일 이격도 150 이상", f"{ks['disp200']:.1f}" if ks and ks.get("disp200") is not None else "-",
          (ks["disp200"] >= 150) if ks and ks.get("disp200") is not None else None),
-        ("미국 10년물 금리 20일간 0.5%p 이상 상승", f"{y10['chg20']:+.2f}%p" if y10 and y10.get("chg20") is not None else "-",
-         (y10["chg20"] >= 0.5) if y10 and y10.get("chg20") is not None else None),
+        ("미국 10년물 금리 10일간 0.3%p 이상 상승", f"{y10['chg10']:+.2f}%p" if y10 and y10.get("chg10") is not None else "-",   # 2026-11-25 20일 +0.5%p → 10일 +0.3%p(riskmix3: 6개월 기준 고점 5/7·-15% 47%)
+         (y10["chg10"] >= 0.3) if y10 and y10.get("chg10") is not None else None),
         ("미국 10년물 금리 5% 이상", f"{y10['last']:.2f}%" if y10 else "-", (y10["last"] >= 5.0) if y10 else None),
         ("내 종목 70% 이상이 일봉 역배열", f"{bear:.0%}" if bear is not None else "-",
          (bear >= 0.7) if bear is not None else None),
