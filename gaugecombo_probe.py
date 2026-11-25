@@ -1,4 +1,4 @@
-"""(gaugecombo) 시장 위험 지표 6개 전체 점검 + 대체 후보(2026-11-25 사용자). 코스피 2000~ 기준, 켜진 날 전부(날 기준)와 처음 켜진 날(구간 기준) 둘 다.
+"""(gaugecombo) 4개 이상 날의 항목 구성 + 시장 위험 지표 6개 전체 점검 + 대체 후보(2026-11-25 사용자). 코스피 2000~ 기준, 켜진 날 전부(날 기준)와 처음 켜진 날(구간 기준) 둘 다.
 좋은 위험 항목 = 켜진 날 60일 안 -10% 하락 확률이 아무 날보다 확실히 높고, 60일 뒤 평균이 아무 날보다 낮음. 너무 드물면(구간 2~3번) 쓸모 적음.
 자료: 코스피 FDR KS11 · 미국채 10년 FRED DGS10(리포트는 야후 ^TNX, 값 거의 같음) · 달러원 FDR USD/KRW
 · 내 종목 역배열 = tickers.json 종목의 과거 주가(지금 목록 기준이라 생존 편향) · 신용잔고/예탁금 = 리포트와 같은 자료(약 5년뿐)"""
@@ -101,8 +101,16 @@ def report(nm, items, since="2010-01-01"):
         else:
             print(f"   {lv:<11} {int(msk.sum()):>4}일")
     print(f"   지금 {int(sc.iloc[-1])}개 켜짐: " + ", ".join(k for k, v in items.items() if bool(v.fillna(False).iloc[-1])))
-print("(점수 = 켜진 항목 수, 자료 없는 항목은 꺼진 것으로 셈 — 리포트와 같음. 신용은 2022~, 외국인은 2005~, 내 종목은 2014~)")
-report("지금 6개", NOWSET)
+def detail(nm, items, since="2010-01-01", th=4):
+    on = {k: v.fillna(False).astype(bool).loc[since:] for k, v in items.items()}
+    sc = sum(v.astype(int) for v in on.values())
+    days = sc[sc >= th].index
+    print(f"\n■ {nm} — {th}개 이상 {len(days)}일")
+    sets = {}
+    for d in days:
+        key = " + ".join(k for k in items if on[k][d]); sets.setdefault(key, []).append(d)
+    for key, ds in sorted(sets.items(), key=lambda x: x[1][0]):
+        print(f"   {len(ds):>3}일 ({ds[0]:%y.%m.%d} ~ {ds[-1]:%y.%m.%d}) {key}")
 for k, v in SIX.items():
-    report(f"새 5개 + {k}", {**B, k: v})
-report("참고: 새 5개만", B)
+    detail(f"새 5개 + {k}", {**B, k: v})
+    detail(f"새 5개 + {k}", {**B, k: v}, th=3)
