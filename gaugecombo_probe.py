@@ -91,7 +91,7 @@ def report(nm, items, since="2010-01-01"):
     ok = fwd60.loc[since:].notna(); bd = dd60.loc[since:][ok]
     print(f"\n■ {nm} — " + " · ".join(items))
     print(f"   아무 날 -10%↓ {(bd <= -10).mean() * 100:.0f}% · 60일 {fwd60.loc[since:][ok].mean():+.1f}%")
-    for lo, hi, lv in ((0, 0, "0개"), (1, 1, "1개(낮음)"), (2, 3, "2~3개(주의)"), (4, 6, "4개↑(경고)")):
+    for lo, hi, lv in ((0, 0, "0개"), (1, 6, "1개 이상"), (2, 6, "2개 이상"), (3, 6, "3개 이상"), (4, 6, "4개 이상"), (5, 6, "5개 이상"), (6, 6, "6개")):
         msk = (sc >= lo) & (sc <= hi); mm = msk & ok
         on = msk.values; rr = runs(on) if lo >= 2 else []
         if mm.sum():
