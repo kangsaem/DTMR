@@ -1,5 +1,5 @@
 """코스피 외국인 순매수(억원, 하루) — 네이버 m.stock api/index/KOSPI/trend?bizdate 로 받아 data/foreign_kospi.csv에 쌓음 (2026-11-25)
-위험 지표 '코스피 52주 고점 -3% 이내인데 외국인 20일 순매도'용. 처음 자료 = results/foreign_kospi.json(2026-10-15 bottom_cmp가 모은 것)의 2024년부터.
+위험 지표 '코스피 52주 고점 -3% 이내인데 외국인 20일 순매도'용. 처음 자료 = results/foreign_kospi.json(2026-10-15 bottom_cmp가 모은 것)의 2021년부터(2026-11-25 5년 칠하기로 늘림).
 휴장일·아직 없는 날은 bizdate가 달라 건너뜀(다음 실행에서 다시 시도)."""
 import csv, json, os, time
 from datetime import date, datetime, timedelta, timezone
@@ -45,9 +45,9 @@ def fetch_day(d):
 
 def update(limit_min=3, log=print):
     rows = load()
-    if not rows and os.path.exists("results/foreign_kospi.json"):          # 처음: 모아 둔 자료에서 2024년부터
+    if not rows and os.path.exists("results/foreign_kospi.json"):          # 처음: 모아 둔 자료에서 2021년부터
         j = json.load(open("results/foreign_kospi.json"))
-        rows = [(date(int(k[:4]), int(k[4:6]), int(k[6:])), float(v)) for k, v in j.items() if k >= "20240101"]
+        rows = [(date(int(k[:4]), int(k[4:6]), int(k[6:])), float(v)) for k, v in j.items() if k >= "20210101"]
     have = {d for d, _ in rows}
     d = (max(have) + timedelta(days=1)) if have else date(2024, 1, 2)
     now = datetime.now(KST)
