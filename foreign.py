@@ -50,7 +50,8 @@ def update(limit_min=3, log=print):
         rows = [(date(int(k[:4]), int(k[4:6]), int(k[6:])), float(v)) for k, v in j.items() if k >= "20240101"]
     have = {d for d, _ in rows}
     d = (max(have) + timedelta(days=1)) if have else date(2024, 1, 2)
-    today, t0, new = datetime.now(KST).date(), time.time(), 0
+    now = datetime.now(KST)
+    today, t0, new = (now.date() if now.hour >= 18 else now.date() - timedelta(days=1)), time.time(), 0   # 장중 값(미확정)은 저장 안 함 — 18시 뒤에만 오늘
     while d <= today and time.time() - t0 < limit_min * 60:
         if d.weekday() < 5 and d not in have:
             v = fetch_day(d)
