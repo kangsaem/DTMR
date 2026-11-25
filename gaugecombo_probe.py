@@ -111,6 +111,13 @@ def detail(nm, items, since="2010-01-01", th=4):
         key = " + ".join(k for k in items if on[k][d]); sets.setdefault(key, []).append(d)
     for key, ds in sorted(sets.items(), key=lambda x: x[1][0]):
         print(f"   {len(ds):>3}일 ({ds[0]:%y.%m.%d} ~ {ds[-1]:%y.%m.%d}) {key}")
-for k, v in SIX.items():
-    detail(f"새 5개 + {k}", {**B, k: v})
-    detail(f"새 5개 + {k}", {**B, k: v}, th=3)
+y_lv = t10.reindex(I, method="ffill")
+A6 = {"50일 이격 120↑": d50 >= 120, "200일 이격 150↑": d200 >= 150, "금리 20일 +0.5%p↑": y_chg20 >= 0.5, "미국 10년물 5% 이상": y_lv >= 5.0,
+      "고점 근처 외국인 20일 매도": near_hi & (f20 < 0), "내 종목 70% 역배열": bear >= 0.7}
+print("(점수 = 켜진 항목 수, 자료 없는 항목은 꺼진 것으로 셈. 외국인 2005~, 내 종목 2014~)")
+for since in ("2000-01-01", "2010-01-01"):
+    print(f"\n######## {since[:4]}~")
+    report("지금 6개", NOWSET, since)
+    report("A안 6개", A6, since)
+for th in (2, 3, 4):
+    detail("A안 6개", A6, "2000-01-01", th)
