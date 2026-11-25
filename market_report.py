@@ -1147,9 +1147,17 @@ def market_snapshot():
             n = len(h)
             snap[key] = {"last": float(h.iloc[-1]), "chg": float(h.iloc[-1] - h.iloc[-2]), "date": h.index[-1],
                          "chg10": float(h.iloc[-1] - h.iloc[-11]) if n >= 11 else None,
+                         "chg20": float(h.iloc[-1] - h.iloc[-21]) if n >= 21 else None,     # 위험 '금리 20일 +0.5%p'(2026-11-25)
                          "pct10": float((h.iloc[-1] / h.iloc[-11] - 1) * 100) if n >= 11 else None}
         except Exception as e:
             snap["err"].append(f"{nm} ({type(e).__name__})")
+    snap["fr"] = None
+    try:
+        snap["fr"] = foreign_info(ks_s)
+        if snap["fr"] is None:
+            snap["err"].append("외국인 순매수 (자료 없음)")
+    except Exception as e:
+        snap["err"].append(f"외국인 순매수 ({type(e).__name__}: {str(e)[:120]})")
     snap["vk"] = None
     try:
         snap["vk"] = vkospi_info(ks_s)
@@ -1284,36 +1292,65 @@ def _vk_stale(vk, ks):
     return ""
 
 
+FR_NEAR = -3.0       # 위험 '코스피 52주 고점 -3% 이내인데 외국인 20일 순매도'(2026-11-25, foreignrisk_probe F2': 60일 안 -10% 확률 ×1.6)
+FR_HIST_FROM = "2025-01-01"
+
+
+def foreign_info(kc):
+    """외국인 순매수(foreign.py, data/foreign_kospi.csv) + 코스피 종가 → 위험 항목 판정과 날짜별 기록(머니파이 지수 차트 위험 구간용)"""
+    import foreign
+    try:
+        foreign.update(limit_min=3, log=lambda *a: None)
+    except Exception as e:
+        print("외국인 순매수 받기 실패:", type(e).__name__, str(e)[:200])
+    f = foreign.series()
+    if f.empty or kc is None or kc.empty:
+        return None
+    f = f.reindex(kc.index)
+    f20 = f.rolling(20, min_periods=18).sum().where(f.notna())   # 빠진 날 2일까지는 그대로, 그날 자료가 있는 날만 판정
+    fh = (kc / kc.rolling(250, min_periods=1).max() - 1) * 100   # 52주 고점 대비(코스피 카드 from_high와 같은 방식)
+    on = (fh >= FR_NEAR) & (f20 < 0)
+    ok = f20.dropna()
+    if ok.empty:
+        return None
+    t = ok.index[-1]
+    h = on[(on.index >= FR_HIST_FROM) & f20.notna()]
+    return {"f20": float(f20[t]), "date": t, "from_high": float(fh[t]), "on": bool(on[t]), "near": FR_NEAR,
+            "hist": {"d": [f"{d:%Y-%m-%d}" for d in h.index], "on": "".join("1" if x else "0" for x in h),
+                     "f20": [round(float(x)) for x in f20.reindex(h.index)]}}
+
+
 def _level(score, total, kind):
     ratio = score / total if total else 0
     hi, mid = ratio >= 0.6, ratio >= 0.3      # 5개면 3개 이상 / 2개, 6개면 4개 이상 / 2개
-    if kind == "risk":
+    if kind == "risk":                        # 위험 = 주의 2개↑ · 경고 3개↑(2026-11-25: 새 6개 검증에서 4개↑는 2000년 이후 없음, 3개↑ = 60일 안 -10% 82~96%)
+        hi, mid = score >= 3, score >= 2
         return ("경고", "lv2") if hi else ("주의", "lv1") if mid else ("낮음", "lv0")
     return ("바닥권 신호 다수", "lv2") if hi else ("바닥 형성 가능성", "lv1") if mid else ("신호 약함", "lv0")
 
 
 def market_signals(snap, results):
     """시장 위험 / 시장 바닥 체크리스트. 항목 = (설명, 현재값, True|False|None(데이터없음))"""
-    ks, vix, y10, cr = snap.get("ks"), snap.get("vix"), snap.get("y10"), snap.get("credit")
+    ks, vix, y10, fr = snap.get("ks"), snap.get("vix"), snap.get("y10"), snap.get("fr")
     vk = snap.get("vk")
     n = len(results)
     bear = sum(1 for r in results if r["day"]["ok"] and not r["day"]["above"]) / n if n else None
     weak = sum(1 for r in results if r["rsi"] <= 35) / n if n else None
 
+    # 2026-11-25 위험 지표 다시 짬(riskaudit·rate·foreignrisk·credit2·gaugecombo_probe, 2000~ 코스피 60일 안 -10% 하락 확률 기준):
+    # 뺌 = RSI 70↑(×0.5, 오히려 상승) · 신용/예탁금 상위 10%(25년치로 ×1.0~1.2) · 금리 10일 +0.3%p(→ 20일 +0.5%p)
+    # 넣음 = 금리 20일 +0.5%p(2010~ ×2.1) · 미국 10년물 5%↑(2000~ ×2.7, 2000~01·2006~07) · 고점 -3% 안 외국인 20일 순매도(×1.6)
+    # 순서 = 머니파이 판정 기록 비트(0~3 시장 계산 · 4 내 종목 역배열 · 5 외국인)와 같게
     risk = [
-        ("코스피 RSI 70 이상", f"{ks['rsi']:.1f}" if ks else "-", ks["rsi"] >= 70 if ks else None),      # RSI 맨 위(2026-11-16)
         ("코스피 50일 이격도 120 이상", f"{ks['disp']:.1f}" if ks else "-", ks["disp"] >= 120 if ks else None),
-        # 2026-11-16: 'VIX 25↑ 또는 10일 30%↑ 급등' → '200일 이격 150↑'. 검증(risk_study.py, 2000~2026 코스피)에서 VIX 25↑ 뒤 60일 평균 +7%(전체 +2.6%)로
-        # 위험이 아니라 바닥 쪽으로 작동. 200일 이격 150↑는 60일 안 -10% 하락 확률 63%(전체 28%), 사례 1998~99·2026(표본 작음)
         ("코스피 200일 이격도 150 이상", f"{ks['disp200']:.1f}" if ks and ks.get("disp200") is not None else "-",
          (ks["disp200"] >= 150) if ks and ks.get("disp200") is not None else None),
-        ("미국 10년물 금리 10일간 0.3%p 이상 상승", f"{y10['chg10']:+.2f}%p" if y10 and y10["chg10"] is not None else "-",
-         (y10["chg10"] >= 0.3) if y10 and y10["chg10"] is not None else None),
+        ("미국 10년물 금리 20일간 0.5%p 이상 상승", f"{y10['chg20']:+.2f}%p" if y10 and y10.get("chg20") is not None else "-",
+         (y10["chg20"] >= 0.5) if y10 and y10.get("chg20") is not None else None),
+        ("미국 10년물 금리 5% 이상", f"{y10['last']:.2f}%" if y10 else "-", (y10["last"] >= 5.0) if y10 else None),
         ("내 종목 70% 이상이 일봉 역배열", f"{bear:.0%}" if bear is not None else "-",
          (bear >= 0.7) if bear is not None else None),
-        (f"신용잔고/예탁금 비율 5년 중 상위 {100 - CREDIT_TOP}%",
-         f"{cr['ratio']:.1f}%" if cr else "-",
-         (cr["pct"] >= CREDIT_TOP) if cr else None),
+        ("코스피 52주 고점 -3% 이내인데\n외국인 20일 순매도", f"{fr['f20'] / 1e4:+.1f}조" if fr else "-", fr["on"] if fr else None),
     ]
     bottom = [
         ("코스피 50일 이격도 90 이하", f"{ks['disp']:.1f}" if ks else "-",
