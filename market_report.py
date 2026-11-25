@@ -894,9 +894,27 @@ def title(r):
 
 
 # ---------------------------------------------------------------- 1. 시장 지표
+FRED_ALT = {"^VIX": "VIXCLS", "^TNX": "DGS10", "^TYX": "DGS30"}   # 야후 끊길 때 대신(미국 연준 FRED, 하루 늦을 수 있음 — 2026-11-25)
+
+
 def _yf_close(sym):
-    import yfinance as yf
-    return yf.Ticker(sym).history(period="2mo")["Close"].dropna()
+    try:
+        import yfinance as yf
+        h = yf.Ticker(sym).history(period="2mo")["Close"].dropna()
+        if len(h) >= 11:
+            return h
+        raise ValueError(f"야후 자료 부족({len(h)}일)")
+    except Exception as e:
+        alt = FRED_ALT.get(sym)
+        if not alt:
+            raise
+        print(f"{sym} 야후 실패 → FRED {alt}:", type(e).__name__, str(e)[:120])
+        with contextlib.redirect_stdout(io.StringIO()):
+            df = fdr.DataReader(f"FRED:{alt}", (datetime.now() - timedelta(days=90)).strftime("%Y-%m-%d"))
+        h = pd.to_numeric(df.iloc[:, 0], errors="coerce").dropna()
+        if len(h) < 2:
+            raise ValueError(f"FRED {alt} 자료 부족")
+        return h
 
 
 INDEXES = (("kospi", "코스피", "KS11", "^KS11"), ("kosdaq", "코스닥", "KQ11", "^KQ11"),
