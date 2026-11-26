@@ -12,7 +12,7 @@
 //
 // 수동 시험: https://<worker 주소>/run?key=<RUN_KEY>  → GitHub Actions에 daily-report 실행이 하나 생기면 정상.
 
-const REPO = "kangsaem/moneypier";
+const REPO = "kangsaem/DTMR";   // 2026-11-26 저장소 이름 moneypier → DTMR
 const WORKFLOW = "daily.yml";
 const REF = "main";
 

@@ -7,7 +7,7 @@
 //   TELEGRAM_TOKEN    실패 알림용 봇 토큰(없으면 알림 생략)
 //   TELEGRAM_CHAT_ID  547869092
 
-const REPO = "kangsaem/moneypier";
+const REPO = "kangsaem/DTMR";   // 2026-11-26 저장소 이름 moneypier → DTMR
 const WORKFLOW = "daily.yml";
 const REF = "main";
 
