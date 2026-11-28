@@ -368,5 +368,10 @@
   "code": "DOW",
   "name": "다우",
   "watch": true
+ },
+ {
+  "code": "ABVX",
+  "name": "아비백스 ADR",
+  "watch": true
  }
 ]
